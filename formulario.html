@@ -42,6 +42,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
 const totalRef = ref(db,"total");
 
 document.getElementById("f").onsubmit = async (e)=>{
@@ -54,9 +55,13 @@ let t = snap.val() || 0;
 
 await set(totalRef, t + m);
 
-let msg = `Aporte:%0A${document.getElementById("n").value}%0A${m} Bs`;
+let msg =
+`Aporte:
+${document.getElementById("n").value}
+${m} Bs`;
 
-window.location.href = "https://wa.me/59175166467?text="+msg;
+window.location.href =
+"https://wa.me/59175166467?text="+encodeURIComponent(msg);
 };
 </script>
 
