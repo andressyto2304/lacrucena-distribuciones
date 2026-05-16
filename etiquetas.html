@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Votación de Etiquetas</title>
+<title>Votación Segura</title>
 
 <style>
 body{
@@ -15,26 +15,11 @@ padding:20px;
 }
 
 .card{
-max-width:750px;
+max-width:800px;
 margin:auto;
 background:#111;
 padding:20px;
 border-radius:15px;
-}
-
-.section{
-margin-top:20px;
-padding:15px;
-border:1px solid #333;
-border-radius:10px;
-}
-
-.package{
-margin-top:10px;
-padding:10px;
-border:1px solid #00cc44;
-border-radius:10px;
-text-align:center;
 }
 
 button{
@@ -52,15 +37,27 @@ cursor:pointer;
 img{
 width:100%;
 border-radius:10px;
-display:block;
 }
 
-p{
-text-align:center;
+.section{
+margin-top:20px;
+padding:15px;
+border:1px solid #333;
+border-radius:10px;
 }
 
-h2{
-text-align:center;
+/* ADMIN */
+#adminPanel{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#000;
+overflow:auto;
+padding:20px;
+z-index:9999;
 }
 </style>
 
@@ -70,63 +67,48 @@ text-align:center;
 
 <div class="card">
 
-<h1 style="text-align:center;">🗳️ Votación de Etiquetas</h1>
+<h1>🗳️ Votación Segura</h1>
 
-<!-- ================= GASEOSAS ================= -->
+<div id="status"></div>
+
 <div class="section">
-
 <h2>🥤 Gaseosas</h2>
 
-<div class="package">
-<img src="gaseosa%201.png" onerror="this.src='https://via.placeholder.com/300x200?text=Gaseosa+1'">
-<button onclick="vote('g1')">Votar Gaseosa 1</button>
-<p>Votos: <span id="g1">0</span></p>
-</div>
-
-<div class="package">
-<img src="gaseosa%202.jpg" onerror="this.src='https://via.placeholder.com/300x200?text=Gaseosa+2'">
-<button onclick="vote('g2')">Votar Gaseosa 2</button>
-<p>Votos: <span id="g2">0</span></p>
-</div>
-
-<div class="package">
-<img src="gaseosa%203.png" onerror="this.src='https://via.placeholder.com/300x200?text=Gaseosa+3'">
-<button onclick="vote('g3')">Votar Gaseosa 3</button>
-<p>Votos: <span id="g3">0</span></p>
-</div>
+<button onclick="vote('g1')">Gaseosa 1</button>
+<button onclick="vote('g2')">Gaseosa 2</button>
+<button onclick="vote('g3')">Gaseosa 3</button>
 
 </div>
 
-<!-- ================= JUGOS ================= -->
 <div class="section">
-
 <h2>🧃 Jugos</h2>
 
-<div class="package">
-<img src="jugo%201.png" onerror="this.src='https://via.placeholder.com/300x200?text=Jugo+1'">
-<button onclick="vote('jugo1')">Votar Jugo 1</button>
-<p>Votos: <span id="jugo1">0</span></p>
-</div>
+<button onclick="vote('j1')">Jugo 1</button>
+<button onclick="vote('j2')">Jugo 2</button>
+<button onclick="vote('j3')">Jugo 3</button>
 
-<div class="package">
-<img src="jugo%202.png" onerror="this.src='https://via.placeholder.com/300x200?text=Jugo+2'">
-<button onclick="vote('jugo2')">Votar Jugo 2</button>
-<p>Votos: <span id="jugo2">0</span></p>
-</div>
-
-<div class="package">
-<img src="jugo%203.png" onerror="this.src='https://via.placeholder.com/300x200?text=Jugo+3'">
-<button onclick="vote('jugo3')">Votar Jugo 3</button>
-<p>Votos: <span id="jugo3">0</span></p>
 </div>
 
 </div>
+
+<!-- ADMIN -->
+<div id="adminPanel">
+
+<h1>🔐 ADMIN PANEL</h1>
+
+<h3>👥 Usuarios registrados</h3>
+<div id="userList"></div>
+
+<button onclick="document.getElementById('adminPanel').style.display='none'">
+Cerrar
+</button>
 
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
@@ -141,46 +123,106 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const votosRef = ref(db, "votos");
+const usersRef = ref(db,"usuarios");
+const votesRef = ref(db,"votos");
 
-let votos = {
-  g1:0,g2:0,g3:0,
-  jugo1:0,jugo2:0,jugo3:0
-};
+// =============================
+// 1. GENERAR ID ÚNICO
+// =============================
+function getUserId(){
+let id = localStorage.getItem("uid");
+if(!id){
+id = "U_" + Math.random().toString(36).substring(2,12);
+localStorage.setItem("uid",id);
+}
+return id;
+}
 
-let voted = {};
+const uid = getUserId();
 
-onValue(votosRef,(snap)=>{
+// =============================
+// 2. VERIFICAR SI YA VOTÓ
+// =============================
+let userData = null;
 
-const data = snap.val() || {};
-votos = data;
-
-Object.keys(votos).forEach(k=>{
-const el = document.getElementById(k);
-if(el) el.innerText = votos[k] || 0;
+onValue(usersRef,(snap)=>{
+userData = snap.val() || {};
+if(userData[uid]?.voted){
+document.getElementById("status").innerHTML =
+"⚠️ Ya has votado anteriormente";
+}
 });
 
-});
+// =============================
+// 3. VOTAR
+// =============================
+window.vote = async function(option){
 
-window.vote = async function(id){
+// bloqueo real
+const snap = await get(ref(db,"usuarios/"+uid));
 
-if(voted[id]){
-alert("Ya votaste esta opción");
+if(snap.exists() && snap.val().voted){
+alert("Ya votaste, acceso bloqueado");
 return;
 }
 
-voted[id] = true;
+// guardar usuario
+await set(ref(db,"usuarios/"+uid),{
+voted:true,
+vote:option,
+date:Date.now()
+});
 
-votos[id] = (votos[id]||0)+1;
+// guardar voto global
+const voteSnap = await get(votesRef);
+let votes = voteSnap.val() || {};
 
-const el = document.getElementById(id);
-if(el) el.innerText = votos[id];
+votes[option] = (votes[option]||0)+1;
 
-await set(votosRef, votos);
+await set(votesRef,votes);
 
+alert("✅ Voto registrado correctamente");
+
+};
+
+// =============================
+// 4. ADMIN PANEL
+// =============================
+const url = new URLSearchParams(window.location.search);
+
+if(url.get("admin")==="CRUCENA2026"){
+document.getElementById("adminPanel").style.display="block";
+
+onValue(usersRef,(snap)=>{
+
+const data = snap.val() || {};
+let html = "";
+
+Object.keys(data).forEach(k=>{
+html += `
+<div style="border-bottom:1px solid #333;padding:10px">
+<p><b>ID:</b> ${k}</p>
+<p><b>Voto:</b> ${data[k].vote}</p>
+
+<button onclick="deleteUser('${k}')">Eliminar bloqueo</button>
+</div>
+`;
+});
+
+document.getElementById("userList").innerHTML = html;
+
+});
+
+}
+
+// eliminar usuario
+window.deleteUser = async function(id){
+await remove(ref(db,"usuarios/"+id));
+alert("Usuario desbloqueado");
 };
 
 </script>
 
 </body>
+
 </html>
