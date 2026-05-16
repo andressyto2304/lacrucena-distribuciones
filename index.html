@@ -96,7 +96,6 @@ progress {
 
 <h1>🙌 Bienvenido</h1>
 
-<!-- 🔥 TEXTO ORIGINAL RESTAURADO (NO MODIFICADO) -->
 <p>
 Bienvenido, nosotros somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong> y estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas aquí en nuestra ciudad Santa Cruz de la Sierra con buena calidad y precios accesibles para toda nuestra gente.
 
@@ -105,7 +104,7 @@ Tu aporte por pequeño o grande que sea nos acerca cada vez más para cumplir es
 Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo tiempo ir creciendo poco a poco con el apoyo de las personas que creen en este sueño.
 </p>
 
-<!-- 🧭 PASOS RESTAURADOS -->
+<!-- PASOS -->
 <div class="live">
 <h3>📌 Pasos para participar</h3>
 <p>1️⃣ Vota por etiquetas del producto</p>
@@ -121,9 +120,8 @@ Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo t
 <p><span id="progressText">0%</span> completado</p>
 </div>
 
-<!-- ESTADÍSTICAS -->
+<!-- ESTADÍSTICAS (SIN MONTO TOTAL) -->
 <div class="live">
-<p>💰 Total recaudado: <span id="totalDonado">0</span> Bs</p>
 <p>📊 Donaciones: <span id="contadorDonaciones">0</span></p>
 <p>🔥 Última donación: <span id="ultimaDonacion">--</span></p>
 </div>
@@ -134,7 +132,7 @@ Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo t
 <div id="listaCofundadores">Cargando...</div>
 </div>
 
-<!-- SOLO FLUJO CORRECTO -->
+<!-- FLUJO -->
 <a href="etiquetas.html" class="button">🗳️ Comenzar votación de etiquetas</a>
 
 <a href="https://wa.me/59175166467" class="button" style="background:#25D366;">
@@ -169,7 +167,6 @@ onValue(donacionesRef, (snapshot) => {
 
   const data = snapshot.val();
 
-  let total = 0;
   let count = 0;
   let last = "--";
   let list = [];
@@ -181,9 +178,6 @@ onValue(donacionesRef, (snapshot) => {
 
     keys.forEach(k => {
       const d = data[k];
-      const monto = Number(d.monto) || 0;
-
-      total += monto;
       list.push(d);
     });
 
@@ -191,14 +185,8 @@ onValue(donacionesRef, (snapshot) => {
     last = data[lastKey].nombre + " - " + data[lastKey].monto + " Bs";
   }
 
-  document.getElementById("totalDonado").innerText = total;
   document.getElementById("contadorDonaciones").innerText = count;
   document.getElementById("ultimaDonacion").innerText = last;
-
-  let target = (total / goal) * 100;
-  if (target > 100) target = 100;
-
-  animateBar(target);
 
   list.reverse();
   list = list.slice(0, 15);
@@ -215,26 +203,8 @@ onValue(donacionesRef, (snapshot) => {
 
 });
 
-function animateBar(target) {
-
-  const bar = document.getElementById("progressBar");
-  const text = document.getElementById("progressText");
-
-  let current = bar.value || 0;
-
-  const interval = setInterval(() => {
-
-    if (current < target) {
-      current += 0.5;
-    } else {
-      clearInterval(interval);
-    }
-
-    bar.value = current;
-    text.innerText = current.toFixed(1) + "%";
-
-  }, 20);
-}
+// barra (se deja simple sin cálculo monetario)
+function animateBar(){}
 
 </script>
 
