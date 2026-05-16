@@ -3,8 +3,8 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Finalizar aporte</title>
+<meta name="viewport" content="width=device=width, initial-scale=1.0">
+<title>Formulario</title>
 
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -15,9 +15,9 @@
 
 <img src="logo.png" width="180">
 
-<h1>📲 Finalizar aporte</h1>
+<h1>📲 Rellena tus datos personales</h1>
 
-<h2>📦 Detalle de tu aporte</h2>
+<h2>📦 Detalle del paquete promocional elegido</h2>
 <p id="detalle">Cargando...</p>
 
 <hr>
@@ -46,16 +46,15 @@
 
 <h2>📤 Comprobante</h2>
 
-<p style="line-height:1.6;">
+<p>
 💚 Gracias por colaborar con nosotros.  
-Por favor envíanos tu comprobante por WhatsApp.  
-En el botón de “Siguiente” serás redirigido automáticamente al número correspondiente.
+En el botón de abajo podrás enviarnos tu comprobante por WhatsApp.
 </p>
 
-<br>
+<hr>
 
 <button type="button" id="sendBtn" class="button">
-Siguiente → WhatsApp
+Enviar a WhatsApp
 </button>
 
 </form>
@@ -82,7 +81,15 @@ const db = getDatabase(app);
 
 const totalRef = ref(db, "total");
 
-// monto URL
+// QR download
+window.descargarQR = function(){
+  const a = document.createElement("a");
+  a.href = "qr.png";
+  a.download = "qr.png";
+  a.click();
+};
+
+// DETALLE DE PAQUETES
 const params = new URLSearchParams(window.location.search);
 let montoURL = params.get("monto");
 
@@ -91,41 +98,12 @@ const montoInput = document.getElementById("m");
 
 let montoNum = Number(montoURL);
 
-// DETALLE DE PAQUETES
-if (!montoURL || montoNum === 0 || isNaN(montoNum)) {
-
-  detalle.innerText = "💚 Gracias por tu aporte libre, cualquier monto nos ayuda a crecer.";
-  montoInput.value = "";
-  montoInput.placeholder = "Escribe tu aporte";
-
-} else if (montoNum === 150) {
-
-  detalle.innerText = "📦 Paquete Nº 1: 2 gaseosas de degustación. Recibe en tu domicilio o empresa.";
-  montoInput.value = 150;
-
-} else if (montoNum === 300) {
-
-  detalle.innerText = "📦 Paquete Nº 2: 2 gaseosas + 1 jugo 3L. Recibe en tu domicilio o empresa.";
-  montoInput.value = 300;
-
-} else if (montoNum === 500) {
-
-  detalle.innerText = "📦 Paquete Nº 3: 2 gaseosas + 2 jugos + gorra co-fundador. Recibe en tu domicilio o empresa.";
-  montoInput.value = 500;
-
-} else if (montoNum === 1000) {
-
-  detalle.innerText = "📦 Paquete Nº 4: 3 gaseosas + 3 jugos + gorra + polera co-fundador. Recibe en tu domicilio o empresa.";
-  montoInput.value = 1000;
+if (!montoURL || isNaN(montoNum) || montoNum === 0) {
+  detalle.innerText = "💚 Gracias por tu aporte libre.";
+  montoInput.placeholder = "Monto libre";
+} else {
+  montoInput.value = montoNum;
 }
-
-// QR download
-window.descargarQR = function(){
-  const a = document.createElement("a");
-  a.href = "qr.png";
-  a.download = "qr.png";
-  a.click();
-};
 
 // BOTÓN WHATSAPP
 document.getElementById("sendBtn").addEventListener("click", async (e)=>{
@@ -141,7 +119,7 @@ if(!montoFinal || montoFinal <= 0){
   return;
 }
 
-// sumar total en Firebase
+// sumar total
 let snap = await get(totalRef);
 let total = snap.val() || 0;
 await set(totalRef, total + montoFinal);
