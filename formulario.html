@@ -1,11 +1,39 @@
 <!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulario de Aporte</title>
+
+<!-- 🔗 ESTILO GLOBAL -->
+<link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📋 Completa tus datos</h1>
+
+<form id="donationForm">
+
+<label>Nombre completo</label>
+<input type="text" id="nombre" required>
+
+<label>Número de WhatsApp</label>
+<input type="text" id="whatsapp" required>
+
+<label>Dirección</label>
+<textarea id="direccion" required></textarea>
+
 <label>Monto</label>
 <input type="number" id="monto" required>
 
 <h3 class="center">📲 Escanea el QR</h3>
 
 <div class="center">
-<img src="qr.png" style="width:220px;border-radius:15px;border:2px solid #00cc44;">
+<img src="qr.png" style="width:200px;border-radius:15px;border:2px solid #00cc44;">
 </div>
 
 <label>📸 Subir comprobante</label>
@@ -22,29 +50,37 @@
 <script>
 const params = new URLSearchParams(window.location.search);
 const monto = params.get('monto');
+const paquete = params.get('paquete');
 
-document.getElementById('monto').value = monto;
+if(monto){
+    document.getElementById('monto').value = monto;
 
-if(monto !== '0'){
- document.getElementById('monto').readOnly = true;
+    if(monto !== "0"){
+        document.getElementById('monto').readOnly = true;
+    }
 }
 
-document.getElementById('donationForm').addEventListener('submit',function(e){
- e.preventDefault();
+document.getElementById('donationForm').addEventListener('submit', function(e){
+    e.preventDefault();
 
- const paquete = params.get('paquete');
- const nombre = document.getElementById('nombre').value;
- const whatsapp = document.getElementById('whatsapp').value;
- const direccion = document.getElementById('direccion').value;
- const montoFinal = document.getElementById('monto').value;
+    const nombre = document.getElementById('nombre').value;
+    const whatsapp = document.getElementById('whatsapp').value;
+    const direccion = document.getElementById('direccion').value;
+    const montoFinal = document.getElementById('monto').value;
 
- const mensaje = `🙌 NUEVA DONACIÓN %0A%0A📦 Paquete: ${paquete}%0A👤 Nombre: ${nombre}%0A📱 WhatsApp: ${whatsapp}%0A🏠 Dirección: ${direccion}%0A💰 Monto: ${montoFinal} Bs`;
+    const mensaje =
+`🙌 NUEVA DONACIÓN
+📦 Paquete: ${paquete || "Libre"}
+👤 Nombre: ${nombre}
+📱 WhatsApp: ${whatsapp}
+🏠 Dirección: ${direccion}
+💰 Monto: ${montoFinal} Bs`;
 
- window.open(`https://wa.me/59175166467?text=${mensaje}`,'_blank');
+    window.open(`https://wa.me/59175166467?text=${encodeURIComponent(mensaje)}`, '_blank');
 
- setTimeout(()=>{
-  window.location.href='gracias.html';
- },1000);
+    setTimeout(()=>{
+        window.location.href = "gracias.html";
+    }, 1000);
 });
 </script>
 
