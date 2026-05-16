@@ -36,9 +36,7 @@
 <h2>💳 QR de pago</h2>
 <img src="qr.png" width="200"><br><br>
 
-<button type="button" class="button" onclick="descargarQR()">
-⬇ Descargar QR
-</button>
+<button type="button" onclick="descargarQR()">⬇ Descargar QR</button>
 
 <hr>
 
@@ -47,7 +45,7 @@
 
 <hr>
 
-<button id="sendBtn" class="button" disabled>
+<button type="button" id="sendBtn" disabled>
 Enviar a WhatsApp
 </button>
 
@@ -77,9 +75,15 @@ const storage = getStorage(app);
 const totalRef = ref(db, "total");
 const fundadoresRef = ref(db, "fundadores");
 
-// --------------------
-// DETALLE DE PAQUETE
-// --------------------
+// ---------------- QR ----------------
+window.descargarQR = function(){
+  const a = document.createElement("a");
+  a.href = "qr.png";
+  a.download = "qr.png";
+  a.click();
+};
+
+// ---------------- DETALLE ----------------
 const params = new URLSearchParams(window.location.search);
 let montoURL = params.get("monto");
 
@@ -89,58 +93,22 @@ const montoInput = document.getElementById("m");
 let montoNum = Number(montoURL);
 
 if (!montoURL || montoNum === 0 || isNaN(montoNum)) {
-
-  detalle.innerText = "💚 Gracias por tu aporte libre, cualquier monto nos ayuda a crecer.";
+  detalle.innerText = "💚 Gracias por tu aporte libre.";
   montoInput.placeholder = "Escribe tu aporte";
-
-} else if (montoNum === 150) {
-
-  detalle.innerText = "📦 Paquete Nº 1: 2 gaseosas de degustación. Recibe en tu domicilio o empresa.";
-  montoInput.value = 150;
-
-} else if (montoNum === 300) {
-
-  detalle.innerText = "📦 Paquete Nº 2: 2 gaseosas + 1 jugo 3L. Recibe en tu domicilio o empresa.";
-  montoInput.value = 300;
-
-} else if (montoNum === 500) {
-
-  detalle.innerText = "📦 Paquete Nº 3: 2 gaseosas + 2 jugos + gorra co-fundador. Recibe en tu domicilio o empresa.";
-  montoInput.value = 500;
-
-} else if (montoNum === 1000) {
-
-  detalle.innerText = "📦 Paquete Nº 4: 3 gaseosas + 3 jugos + gorra + polera co-fundador. Recibe en tu domicilio o empresa.";
-  montoInput.value = 1000;
+} else {
+  montoInput.value = montoNum;
 }
 
-// --------------------
-// DESCARGAR QR
-// --------------------
-window.descargarQR = function(){
-  const a = document.createElement("a");
-  a.href = "qr.png";
-  a.download = "qr.png";
-  a.click();
-};
-
-// --------------------
-// BOTÓN HABILITAR
-// --------------------
+// ---------------- BOTÓN ----------------
 const fileInput = document.getElementById("comprobante");
 const sendBtn = document.getElementById("sendBtn");
 
 fileInput.addEventListener("change", ()=>{
-  if(fileInput.files.length > 0){
-    sendBtn.disabled = false;
-  }
+  sendBtn.disabled = fileInput.files.length === 0;
 });
 
-// --------------------
-// ENVIAR
-// --------------------
-sendBtn.addEventListener("click", async (e)=>{
-e.preventDefault();
+// ---------------- CLICK ENVIAR ----------------
+sendBtn.addEventListener("click", async ()=>{
 
 let nombre = document.getElementById("n").value || "No registrado";
 let whatsapp = document.getElementById("w").value || "";
@@ -152,9 +120,7 @@ if(!montoFinal || montoFinal <= 0){
   return;
 }
 
-// --------------------
-// SUBIR COMPROBANTE
-// --------------------
+// subir comprobante
 let file = fileInput.files[0];
 let url = "";
 
@@ -164,9 +130,7 @@ if(file){
   url = await getDownloadURL(fileRef);
 }
 
-// --------------------
-// GUARDAR CO-FUNDADOR
-// --------------------
+// guardar en DB
 await push(fundadoresRef, {
   nombre,
   whatsapp,
@@ -176,28 +140,24 @@ await push(fundadoresRef, {
   fecha: Date.now()
 });
 
-// --------------------
-// SUMAR TOTAL
-// --------------------
+// sumar total
 let snap = await get(totalRef);
 let total = snap.val() || 0;
 await set(totalRef, total + montoFinal);
 
-// --------------------
-// WHATSAPP
-// --------------------
+// 🔥 WHATSAPP DIRECTO (SIN BLOQUEOS)
 let msg =
 `💚 Aporte recibido
 Nombre: ${nombre}
 Monto: ${montoFinal} Bs
 Dirección: ${direccion}
-
 📎 Comprobante enviado al sistema`;
 
 window.location.href =
 "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
 
 });
+
 </script>
 
 </body>
