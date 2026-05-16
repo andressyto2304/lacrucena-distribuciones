@@ -25,7 +25,6 @@ body {
 
 h1, h2, h3 {
   text-align: center;
-  color: #fff;
 }
 
 p {
@@ -38,13 +37,11 @@ p {
   padding: 15px;
   border-radius: 10px;
   margin-top: 20px;
-  text-align: center;
 }
 
 progress {
   width: 100%;
   height: 25px;
-  transition: all 0.6s ease;
 }
 
 .live {
@@ -53,98 +50,144 @@ progress {
   padding: 15px;
   border-radius: 10px;
   margin-top: 15px;
-  text-align: center;
 }
 
 .cofundador {
-  text-align: left;
   padding: 8px;
   border-bottom: 1px solid #222;
-  font-size: 14px;
-}
-
-.logo {
-  width: 200px;
-  display: block;
-  margin: auto;
-  border-radius: 15px;
-  border: 2px solid #00cc44;
 }
 
 .button {
-  display: inline-block;
+  display: block;
   margin-top: 15px;
   padding: 12px;
   background: #00cc44;
   color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
   text-align: center;
+  border-radius: 10px;
   text-decoration: none;
+  font-weight: bold;
+}
+
+/* ADMIN PANEL */
+#adminPanel {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0a0a0a;
+  z-index: 99999;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.admin-card {
+  background: #111;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #222;
+}
+
+.admin-title {
+  color: #00cc44;
+}
+
+.close-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
 </style>
+
 </head>
 
 <body>
 
 <div class="card">
 
-<img src="logo.png" class="logo">
-
-<h1>🙌 Bienvenido</h1>
+<h1>🙌 LA CRUCEÑA DISTRIBUCIONES</h1>
 
 <p>
-Bienvenido, nosotros somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong> y estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas aquí en nuestra ciudad Santa Cruz de la Sierra con buena calidad y precios accesibles para toda nuestra gente.
-
-Tu aporte por pequeño o grande que sea nos acerca cada vez más para cumplir este sueño. Únete a nosotros como co-fundador apoyando este proyecto que nace desde nuestra propia tierra.
-
-Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo tiempo ir creciendo poco a poco con el apoyo de las personas que creen en este sueño.
+Proyecto de fábrica de bebidas en Santa Cruz.
 </p>
 
-<!-- PASOS -->
 <div class="live">
-<h3>📌 Pasos para participar</h3>
-<p>1️⃣ Vota por etiquetas del producto</p>
-<p>2️⃣ Selecciona tu paquete promocional</p>
-<p>3️⃣ Llena tus datos personales</p>
-<p>4️⃣ Envía tu aporte por WhatsApp</p>
-</div>
-
-<!-- PROGRESO -->
-<div class="goal">
-<h3>🎯 Progreso del proyecto</h3>
+<h3>📊 Progreso</h3>
 <progress id="progressBar" value="0" max="100"></progress>
-<p><span id="progressText">0%</span> completado</p>
 </div>
 
-<!-- ESTADÍSTICAS (SIN MONTO TOTAL) -->
 <div class="live">
-<p>📊 Donaciones: <span id="contadorDonaciones">0</span></p>
-<p>🔥 Última donación: <span id="ultimaDonacion">--</span></p>
+<p>📦 Donaciones: <span id="contadorDonaciones">0</span></p>
+<p>🔥 Último: <span id="ultimaDonacion">--</span></p>
 </div>
 
-<!-- COFUNDADORES -->
 <div class="live">
-<h3>👥 Últimos 15 cofundadores</h3>
+<h3>👥 Cofundadores</h3>
 <div id="listaCofundadores">Cargando...</div>
 </div>
 
-<!-- FLUJO -->
-<a href="etiquetas.html" class="button">🗳️ Comenzar votación de etiquetas</a>
+<a href="etiquetas.html" class="button">🗳️ Votación de etiquetas</a>
 
 <a href="https://wa.me/59175166467" class="button" style="background:#25D366;">
-💬 Contacto WhatsApp
+💬 WhatsApp
 </a>
 
 </div>
 
-<!-- FIREBASE -->
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+
+<h1>🔐 PANEL ADMIN PRO</h1>
+
+<div class="admin-grid">
+
+<div class="admin-card">
+<h3 class="admin-title">💰 DONACIONES</h3>
+<p>Total: <span id="a_total">0</span> Bs</p>
+<p>Cantidad: <span id="a_count">0</span></p>
+</div>
+
+<div class="admin-card">
+<h3 class="admin-title">🗳️ VOTOS</h3>
+<pre id="a_votes">Cargando...</pre>
+</div>
+
+<div class="admin-card">
+<h3 class="admin-title">🔥 ÚLTIMO COFUNDADOR</h3>
+<p id="a_last">--</p>
+</div>
+
+</div>
+
+<button onclick="exportExcel()" class="close-btn" style="background:#007bff;">
+📊 Exportar Excel Cofundadores
+</button>
+
+<button onclick="document.getElementById('adminPanel').style.display='none'" class="close-btn">
+Cerrar Panel
+</button>
+
+</div>
+
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
@@ -160,51 +203,75 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const donacionesRef = ref(db, "donaciones");
+const votosRef = ref(db, "votos");
 
-const goal = 105000;
+const url = new URLSearchParams(window.location.search);
 
-onValue(donacionesRef, (snapshot) => {
+if(url.get("admin") === "CRUCENA2026"){
+document.getElementById("adminPanel").style.display = "block";
+}
 
-  const data = snapshot.val();
+let cacheData = {};
 
-  let count = 0;
-  let last = "--";
-  let list = [];
+onValue(donacionesRef,(snap)=>{
 
-  if (data) {
+const data = snap.val() || {};
+cacheData = data;
 
-    const keys = Object.keys(data);
-    count = keys.length;
+let count = Object.keys(data).length;
+let total = 0;
+let last = "--";
 
-    keys.forEach(k => {
-      const d = data[k];
-      list.push(d);
-    });
+Object.keys(data).forEach(k=>{
+total += Number(data[k].monto || 0);
+});
 
-    const lastKey = keys[keys.length - 1];
-    last = data[lastKey].nombre + " - " + data[lastKey].monto + " Bs";
-  }
+if(count>0){
+let keys = Object.keys(data);
+let lastItem = data[keys[keys.length-1]];
+last = lastItem.nombre + " - " + lastItem.monto + " Bs";
+}
 
-  document.getElementById("contadorDonaciones").innerText = count;
-  document.getElementById("ultimaDonacion").innerText = last;
+document.getElementById("contadorDonaciones").innerText = count;
+document.getElementById("ultimaDonacion").innerText = last;
 
-  list.reverse();
-  list = list.slice(0, 15);
-
-  const cont = document.getElementById("listaCofundadores");
-  cont.innerHTML = "";
-
-  list.forEach(d => {
-    const div = document.createElement("div");
-    div.className = "cofundador";
-    div.innerHTML = `💚 <b>${d.nombre}</b> - ${d.monto} Bs`;
-    cont.appendChild(div);
-  });
+if(url.get("admin") === "CRUCENA2026"){
+document.getElementById("a_total").innerText = total;
+document.getElementById("a_count").innerText = count;
+document.getElementById("a_last").innerText = last;
+}
 
 });
 
-// barra (se deja simple sin cálculo monetario)
-function animateBar(){}
+onValue(votosRef,(snap)=>{
+
+if(url.get("admin") === "CRUCENA2026"){
+document.getElementById("a_votes").innerText =
+JSON.stringify(snap.val()||{},null,2);
+}
+
+});
+
+// EXPORT EXCEL
+window.exportExcel = function(){
+
+let rows = [];
+
+Object.values(cacheData).forEach(d=>{
+rows.push({
+Nombre: d.nombre || "",
+Monto: d.monto || 0,
+Codigo: d.codigo || "SIN CODIGO"
+});
+});
+
+const ws = XLSX.utils.json_to_sheet(rows);
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, "Cofundadores");
+
+XLSX.writeFile(wb, "cofundadores.xlsx");
+
+};
 
 </script>
 
