@@ -13,7 +13,7 @@
 
 <div class="container">
 
-<h1>📋 Formulario de aporte</h1>
+<h1>📋 Aporte</h1>
 
 <form id="donationForm">
 
@@ -29,12 +29,7 @@
 <label>Monto</label>
 <input type="number" id="monto" required>
 
-<h3>📸 Comprobante</h3>
-<input type="file" required>
-
-<button class="button" type="submit">
-✅ Enviar
-</button>
+<button class="button" type="submit">Enviar</button>
 
 </form>
 
@@ -45,13 +40,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/fireba
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://TU_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "XXX",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
+  authDomain: "lacrucena-db.firebaseapp.com",
+  databaseURL: "https://lacrucena-db-default-rtdb.firebaseio.com",
+  projectId: "lacrucena-db",
+  storageBucket: "lacrucena-db.firebasestorage.app",
+  messagingSenderId: "808407017494",
+  appId: "1:808407017494:web:3202e7a9ee67e8d625ed37"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -59,7 +54,7 @@ const db = getDatabase(app);
 
 const totalRef = ref(db, "total");
 
-document.getElementById("donationForm").addEventListener("submit", function(e){
+document.getElementById("donationForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const nombre = document.getElementById("nombre").value;
@@ -67,14 +62,11 @@ document.getElementById("donationForm").addEventListener("submit", function(e){
     const direccion = document.getElementById("direccion").value;
     const monto = parseInt(document.getElementById("monto").value);
 
-    get(totalRef).then((snap) => {
+    const snap = await get(totalRef);
+    let actual = snap.val() || 0;
+    let nuevo = actual + monto;
 
-        let actual = snap.val() || 0;
-        let nuevo = actual + monto;
-
-        set(totalRef, nuevo);
-
-    });
+    await set(totalRef, nuevo);
 
     const mensaje =
 `🙌 NUEVA DONACIÓN
@@ -85,11 +77,6 @@ document.getElementById("donationForm").addEventListener("submit", function(e){
 
     window.location.href =
 `https://wa.me/59175166467?text=${encodeURIComponent(mensaje)}`;
-
-    setTimeout(() => {
-        window.location.href = "gracias.html";
-    }, 1500);
-
 });
 </script>
 
