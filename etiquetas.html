@@ -41,12 +41,10 @@ font-weight:bold;
 cursor:pointer;
 }
 
-.voteBox{
-margin-top:10px;
-padding:10px;
-background:#000;
-border-radius:8px;
-border:1px solid #333;
+img{
+width:100%;
+border-radius:10px;
+display:block;
 }
 </style>
 
@@ -62,14 +60,14 @@ border:1px solid #333;
 <div class="section">
 <h2>🥤 Gaseosas</h2>
 
-<button onclick="vote('gaseosa','g1')">Gaseosa 1</button>
-<div class="voteBox">Votos: <span id="g1v">0</span> | <span id="g1p">0</span>%</div>
+<img src="gaseosa 1.png" onerror="this.src='gaseosa1.png'">
+<button onclick="vote('g1')">Votar Gaseosa 1</button>
 
-<button onclick="vote('gaseosa','g2')">Gaseosa 2</button>
-<div class="voteBox">Votos: <span id="g2v">0</span> | <span id="g2p">0</span>%</div>
+<img src="gaseosa 2.jpg" onerror="this.src='gaseosa2.jpg'">
+<button onclick="vote('g2')">Votar Gaseosa 2</button>
 
-<button onclick="vote('gaseosa','g3')">Gaseosa 3</button>
-<div class="voteBox">Votos: <span id="g3v">0</span> | <span id="g3p">0</span>%</div>
+<img src="gaseosa 3.png" onerror="this.src='gaseosa3.png'">
+<button onclick="vote('g3')">Votar Gaseosa 3</button>
 
 </div>
 
@@ -77,14 +75,14 @@ border:1px solid #333;
 <div class="section">
 <h2>🧃 Jugos</h2>
 
-<button onclick="vote('jugo','j1')">Jugo 1</button>
-<div class="voteBox">Votos: <span id="j1v">0</span> | <span id="j1p">0</span>%</div>
+<img src="jugo 1.png" onerror="this.src='jugo1.png'">
+<button onclick="vote('jugo1')">Votar Jugo 1</button>
 
-<button onclick="vote('jugo','j2')">Jugo 2</button>
-<div class="voteBox">Votos: <span id="j2v">0</span> | <span id="j2p">0</span>%</div>
+<img src="jugo 2.png" onerror="this.src='jugo2.png'">
+<button onclick="vote('jugo2')">Votar Jugo 2</button>
 
-<button onclick="vote('jugo','j3')">Jugo 3</button>
-<div class="voteBox">Votos: <span id="j3v">0</span> | <span id="j3p">0</span>%</div>
+<img src="jugo 3.png" onerror="this.src='jugo3.png'">
+<button onclick="vote('jugo3')">Votar Jugo 3</button>
 
 </div>
 
@@ -93,7 +91,7 @@ border:1px solid #333;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
@@ -110,7 +108,6 @@ const db = getDatabase(app);
 
 const votosRef = ref(db,"votos");
 
-// ID usuario
 function getUserId(){
 let id = localStorage.getItem("uid");
 if(!id){
@@ -122,67 +119,16 @@ return id;
 
 const uid = getUserId();
 
-// render en vivo
-onValue(votosRef,(snap)=>{
-const v = snap.val() || {};
+window.vote = async function(option){
 
-const g1=v.g1||0, g2=v.g2||0, g3=v.g3||0;
-const j1=v.j1||0, j2=v.j2||0, j3=v.j3||0;
+const snap = await get(votosRef);
+let votos = snap.val() || {};
 
-const totalG = g1+g2+g3;
-const totalJ = j1+j2+j3;
-
-// GASEOSAS
-document.getElementById("g1v").innerText=g1;
-document.getElementById("g2v").innerText=g2;
-document.getElementById("g3v").innerText=g3;
-
-document.getElementById("g1p").innerText= totalG?((g1/totalG)*100).toFixed(1):0;
-document.getElementById("g2p").innerText= totalG?((g2/totalG)*100).toFixed(1):0;
-document.getElementById("g3p").innerText= totalG?((g3/totalG)*100).toFixed(1):0;
-
-// JUGOS
-document.getElementById("j1v").innerText=j1;
-document.getElementById("j2v").innerText=j2;
-document.getElementById("j3v").innerText=j3;
-
-document.getElementById("j1p").innerText= totalJ?((j1/totalJ)*100).toFixed(1):0;
-document.getElementById("j2p").innerText= totalJ?((j2/totalJ)*100).toFixed(1):0;
-document.getElementById("j3p").innerText= totalJ?((j3/totalJ)*100).toFixed(1):0;
-
-});
-
-// voto
-window.vote = async function(categoria, opcion){
-
-const userRef = ref(db,"usuarios/"+uid);
-const snap = await get(userRef);
-const data = snap.val() || {};
-
-if(categoria==="gaseosa" && data.gaseosaVotado){
-alert("Ya votaste gaseosas");
-return;
-}
-
-if(categoria==="jugo" && data.jugoVotado){
-alert("Ya votaste jugos");
-return;
-}
-
-if(categoria==="gaseosa"){
-await set(userRef,{...data,gaseosaVotado:true,gaseosa:opcion});
-}
-
-if(categoria==="jugo"){
-await set(userRef,{...data,jugoVotado:true,jugo:opcion});
-}
-
-const votosSnap = await get(votosRef);
-let votos = votosSnap.val()||{};
-
-votos[opcion]=(votos[opcion]||0)+1;
+votos[option] = (votos[option]||0)+1;
 
 await set(votosRef,votos);
+
+alert("Voto registrado");
 
 };
 
