@@ -30,7 +30,6 @@
 <input id="w" placeholder="WhatsApp" required><br><br>
 <textarea id="d" placeholder="Dirección" required></textarea><br><br>
 
-<!-- monto -->
 <input id="m" type="number" required><br><br>
 
 <hr>
@@ -82,14 +81,13 @@ const totalRef = ref(db, "total");
 const params = new URLSearchParams(window.location.search);
 let montoURL = params.get("monto");
 
-// elementos
 const detalle = document.getElementById("detalle");
 const montoInput = document.getElementById("m");
 
-// convertir seguro
+// lógica segura
 let montoNum = Number(montoURL);
 
-// 🔥 LOGICA CORRECTA
+// DETALLE
 if (!montoURL || montoNum === 0 || isNaN(montoNum)) {
 
   detalle.innerText = "💚 Gracias por tu aporte libre, cualquier monto nos ayuda a crecer.";
@@ -125,7 +123,7 @@ window.descargarQR = function(){
   a.click();
 };
 
-// desbloqueo botón
+// habilitar botón solo con comprobante
 const fileInput = document.getElementById("comprobante");
 const sendBtn = document.getElementById("sendBtn");
 
@@ -135,7 +133,7 @@ fileInput.addEventListener("change", ()=>{
   }
 });
 
-// enviar whatsapp
+// ENVIAR CON MENSAJE + ESPERA
 sendBtn.addEventListener("click", async (e)=>{
 e.preventDefault();
 
@@ -149,18 +147,52 @@ if(!montoFinal || montoFinal <= 0){
   return;
 }
 
+// Firebase
 let snap = await get(totalRef);
 let total = snap.val() || 0;
 
 await set(totalRef, total + montoFinal);
+
+// OVERLAY DE AGRADECIMIENTO
+const overlay = document.createElement("div");
+overlay.style.position = "fixed";
+overlay.style.top = "0";
+overlay.style.left = "0";
+overlay.style.width = "100%";
+overlay.style.height = "100%";
+overlay.style.background = "rgba(0,0,0,0.85)";
+overlay.style.color = "white";
+overlay.style.display = "flex";
+overlay.style.alignItems = "center";
+overlay.style.justifyContent = "center";
+overlay.style.textAlign = "center";
+overlay.style.padding = "20px";
+overlay.style.zIndex = "9999";
+
+overlay.innerHTML = `
+<div>
+<h2>💚 Gracias por decidir ser parte de nuestro grupo de co-fundadores</h2>
+<p style="max-width:600px; line-height:1.6;">
+Como último regalo en agradecimiento de parte de la familia de LA CRUCEÑA DISTRIBUIDORES te ofrecemos un descuento con entrega a domicilio del 10% en todos tus pedidos durante 6 meses a partir del lanzamiento de la fábrica y producción.
+</p>
+<p>⏳ Preparando tu solicitud...</p>
+</div>
+`;
+
+document.body.appendChild(overlay);
+
+// esperar y enviar a WhatsApp
+setTimeout(()=>{
 
 let msg =
 `Aporte:%0ANombre: ${nombre}%0AMonto: ${montoFinal} Bs%0ADirección: ${direccion}`;
 
 window.location.href =
 "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
-});
 
+}, 6000);
+
+});
 </script>
 
 </body>
