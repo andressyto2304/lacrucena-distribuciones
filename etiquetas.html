@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Votación Segura</title>
+<title>Votación de Etiquetas</title>
 
 <style>
 body{
@@ -53,25 +53,25 @@ cursor:not-allowed;
 
 <div class="card">
 
-<h1>🗳️ Votación por Categorías</h1>
+<h1>🗳️ Votación de Etiquetas</h1>
 
 <!-- GASEOSAS -->
 <div class="section">
-<h2>🥤 Gaseosas (1 solo voto)</h2>
+<h2>🥤 Gaseosas</h2>
 
-<button id="g1" onclick="vote('gaseosa','g1')">Gaseosa 1</button>
-<button id="g2" onclick="vote('gaseosa','g2')">Gaseosa 2</button>
-<button id="g3" onclick="vote('gaseosa','g3')">Gaseosa 3</button>
+<button onclick="vote('gaseosa','g1')">Gaseosa 1</button>
+<button onclick="vote('gaseosa','g2')">Gaseosa 2</button>
+<button onclick="vote('gaseosa','g3')">Gaseosa 3</button>
 
 </div>
 
 <!-- JUGOS -->
 <div class="section">
-<h2>🧃 Jugos (1 solo voto)</h2>
+<h2>🧃 Jugos</h2>
 
-<button id="j1" onclick="vote('jugo','j1')">Jugo 1</button>
-<button id="j2" onclick="vote('jugo','j2')">Jugo 2</button>
-<button id="j3" onclick="vote('jugo','j3')">Jugo 3</button>
+<button onclick="vote('jugo','j1')">Jugo 1</button>
+<button onclick="vote('jugo','j2')">Jugo 2</button>
+<button onclick="vote('jugo','j3')">Jugo 3</button>
 
 </div>
 
@@ -95,7 +95,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ID único
+// ID único por usuario
 function getUserId(){
 let id = localStorage.getItem("uid");
 if(!id){
@@ -107,14 +107,13 @@ return id;
 
 const uid = getUserId();
 
-// VOTAR
 window.vote = async function(categoria, opcion){
 
 const userRef = ref(db,"usuarios/"+uid);
 const snap = await get(userRef);
 const data = snap.val() || {};
 
-// BLOQUEO POR CATEGORÍA
+// 🔐 BLOQUEO POR CATEGORÍA (FIX REAL)
 if(categoria === "gaseosa" && data.gaseosaVotado){
 alert("Ya votaste en gaseosas");
 return;
@@ -125,7 +124,7 @@ alert("Ya votaste en jugos");
 return;
 }
 
-// guardar usuario
+// guardar voto
 if(categoria === "gaseosa"){
 await set(userRef,{
 ...data,
@@ -144,18 +143,16 @@ jugo:opcion
 
 alert("Voto registrado correctamente");
 
-// bloquear botones
+// bloquear botones SOLO de la categoría
 if(categoria === "gaseosa"){
-document.querySelectorAll("[id^='g']").forEach(b=>{
-b.disabled=true;
-b.classList.add("disabled");
+document.querySelectorAll("button").forEach(b=>{
+if(b.innerText.includes("Gaseosa")) b.disabled = true;
 });
 }
 
 if(categoria === "jugo"){
-document.querySelectorAll("[id^='j']").forEach(b=>{
-b.disabled=true;
-b.classList.add("disabled");
+document.querySelectorAll("button").forEach(b=>{
+if(b.innerText.includes("Jugo")) b.disabled = true;
 });
 }
 
