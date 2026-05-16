@@ -41,9 +41,12 @@ font-weight:bold;
 cursor:pointer;
 }
 
-.disabled{
-background:#444 !important;
-cursor:not-allowed;
+.voteBox{
+margin-top:10px;
+padding:10px;
+background:#000;
+border-radius:8px;
+border:1px solid #333;
 }
 </style>
 
@@ -60,8 +63,13 @@ cursor:not-allowed;
 <h2>🥤 Gaseosas</h2>
 
 <button onclick="vote('gaseosa','g1')">Gaseosa 1</button>
+<div class="voteBox">Votos: <span id="g1v">0</span> | <span id="g1p">0</span>%</div>
+
 <button onclick="vote('gaseosa','g2')">Gaseosa 2</button>
+<div class="voteBox">Votos: <span id="g2v">0</span> | <span id="g2p">0</span>%</div>
+
 <button onclick="vote('gaseosa','g3')">Gaseosa 3</button>
+<div class="voteBox">Votos: <span id="g3v">0</span> | <span id="g3p">0</span>%</div>
 
 </div>
 
@@ -70,8 +78,13 @@ cursor:not-allowed;
 <h2>🧃 Jugos</h2>
 
 <button onclick="vote('jugo','j1')">Jugo 1</button>
+<div class="voteBox">Votos: <span id="j1v">0</span> | <span id="j1p">0</span>%</div>
+
 <button onclick="vote('jugo','j2')">Jugo 2</button>
+<div class="voteBox">Votos: <span id="j2v">0</span> | <span id="j2p">0</span>%</div>
+
 <button onclick="vote('jugo','j3')">Jugo 3</button>
+<div class="voteBox">Votos: <span id="j3v">0</span> | <span id="j3p">0</span>%</div>
 
 </div>
 
@@ -80,7 +93,7 @@ cursor:not-allowed;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
@@ -95,7 +108,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ID único por usuario
+const votosRef = ref(db,"votos");
+
+// ID usuario
 function getUserId(){
 let id = localStorage.getItem("uid");
 if(!id){
@@ -107,59 +122,71 @@ return id;
 
 const uid = getUserId();
 
+// render en vivo
+onValue(votosRef,(snap)=>{
+const v = snap.val() || {};
+
+const g1=v.g1||0, g2=v.g2||0, g3=v.g3||0;
+const j1=v.j1||0, j2=v.j2||0, j3=v.j3||0;
+
+const totalG = g1+g2+g3;
+const totalJ = j1+j2+j3;
+
+// GASEOSAS
+document.getElementById("g1v").innerText=g1;
+document.getElementById("g2v").innerText=g2;
+document.getElementById("g3v").innerText=g3;
+
+document.getElementById("g1p").innerText= totalG?((g1/totalG)*100).toFixed(1):0;
+document.getElementById("g2p").innerText= totalG?((g2/totalG)*100).toFixed(1):0;
+document.getElementById("g3p").innerText= totalG?((g3/totalG)*100).toFixed(1):0;
+
+// JUGOS
+document.getElementById("j1v").innerText=j1;
+document.getElementById("j2v").innerText=j2;
+document.getElementById("j3v").innerText=j3;
+
+document.getElementById("j1p").innerText= totalJ?((j1/totalJ)*100).toFixed(1):0;
+document.getElementById("j2p").innerText= totalJ?((j2/totalJ)*100).toFixed(1):0;
+document.getElementById("j3p").innerText= totalJ?((j3/totalJ)*100).toFixed(1):0;
+
+});
+
+// voto
 window.vote = async function(categoria, opcion){
 
 const userRef = ref(db,"usuarios/"+uid);
 const snap = await get(userRef);
 const data = snap.val() || {};
 
-// 🔐 BLOQUEO POR CATEGORÍA (FIX REAL)
-if(categoria === "gaseosa" && data.gaseosaVotado){
-alert("Ya votaste en gaseosas");
+if(categoria==="gaseosa" && data.gaseosaVotado){
+alert("Ya votaste gaseosas");
 return;
 }
 
-if(categoria === "jugo" && data.jugoVotado){
-alert("Ya votaste en jugos");
+if(categoria==="jugo" && data.jugoVotado){
+alert("Ya votaste jugos");
 return;
 }
 
-// guardar voto
-if(categoria === "gaseosa"){
-await set(userRef,{
-...data,
-gaseosaVotado:true,
-gaseosa:opcion
-});
+if(categoria==="gaseosa"){
+await set(userRef,{...data,gaseosaVotado:true,gaseosa:opcion});
 }
 
-if(categoria === "jugo"){
-await set(userRef,{
-...data,
-jugoVotado:true,
-jugo:opcion
-});
+if(categoria==="jugo"){
+await set(userRef,{...data,jugoVotado:true,jugo:opcion});
 }
 
-alert("Voto registrado correctamente");
+const votosSnap = await get(votosRef);
+let votos = votosSnap.val()||{};
 
-// bloquear botones SOLO de la categoría
-if(categoria === "gaseosa"){
-document.querySelectorAll("button").forEach(b=>{
-if(b.innerText.includes("Gaseosa")) b.disabled = true;
-});
-}
+votos[opcion]=(votos[opcion]||0)+1;
 
-if(categoria === "jugo"){
-document.querySelectorAll("button").forEach(b=>{
-if(b.innerText.includes("Jugo")) b.disabled = true;
-});
-}
+await set(votosRef,votos);
 
 };
 
 </script>
 
 </body>
-
 </html>
