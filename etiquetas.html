@@ -77,19 +77,19 @@ text-align:center;
 <h2>🥤 Etiquetas de Gaseosas</h2>
 
 <div class="package">
-<img src="gaseosa1.jpg">
+<img src="gaseosa 1.png" onerror="this.src='https://via.placeholder.com/300x200?text=Gaseosa+1'">
 <button onclick="vote('g1')">Votar Gaseosa 1</button>
 <p>Votos: <span id="g1">0</span></p>
 </div>
 
 <div class="package">
-<img src="gaseosa2.jpg">
+<img src="gaseosa 2.jpg" onerror="this.src='https://via.placeholder.com/300x200?text=Gaseosa+2'">
 <button onclick="vote('g2')">Votar Gaseosa 2</button>
 <p>Votos: <span id="g2">0</span></p>
 </div>
 
 <div class="package">
-<img src="gaseosa3.jpg">
+<img src="gaseosa 3.png" onerror="this.src='https://via.placeholder.com/300x200?text=Gaseosa+3'">
 <button onclick="vote('g3')">Votar Gaseosa 3</button>
 <p>Votos: <span id="g3">0</span></p>
 </div>
@@ -102,19 +102,19 @@ text-align:center;
 <h2>🧃 Etiquetas de Jugos</h2>
 
 <div class="package">
-<img src="jugo1.jpg">
+<img src="jugo 1.png" onerror="this.src='https://via.placeholder.com/300x200?text=Jugo+1'">
 <button onclick="vote('jugo1')">Votar Jugo 1</button>
 <p>Votos: <span id="jugo1">0</span></p>
 </div>
 
 <div class="package">
-<img src="jugo2.jpg">
+<img src="jugo 2.png" onerror="this.src='https://via.placeholder.com/300x200?text=Jugo+2'">
 <button onclick="vote('jugo2')">Votar Jugo 2</button>
 <p>Votos: <span id="jugo2">0</span></p>
 </div>
 
 <div class="package">
-<img src="jugo3.jpg">
+<img src="jugo 3.png" onerror="this.src='https://via.placeholder.com/300x200?text=Jugo+3'">
 <button onclick="vote('jugo3')">Votar Jugo 3</button>
 <p>Votos: <span id="jugo3">0</span></p>
 </div>
@@ -148,9 +148,10 @@ let votos = {
   jugo1: 0, jugo2: 0, jugo3: 0
 };
 
-// anti spam simple por sesión
+// anti spam básico
 let voted = {};
 
+// leer votos en vivo
 onValue(votosRef, (snap) => {
 
   const data = snap.val();
@@ -168,7 +169,7 @@ onValue(votosRef, (snap) => {
 
 });
 
-// VOTAR
+// votar
 window.vote = async function(option) {
 
   if (voted[option]) {
@@ -180,7 +181,8 @@ window.vote = async function(option) {
 
   votos[option] = (votos[option] || 0) + 1;
 
-  document.getElementById(option).innerText = votos[option];
+  const el = document.getElementById(option);
+  if (el) el.innerText = votos[option];
 
   await set(votosRef, votos);
 
