@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Votación de Etiquetas</title>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🏷️ Ayúdanos a elegir nuestras etiquetas</h1>
+
+<p>
+Gracias por apoyarnos 🙌
+Tu voto ayuda a definir el diseño de nuestros productos.
+</p>
+
+<hr>
+
+<h2>🥤 Gaseosas</h2>
+
+<div>
+<p>Opción 1</p>
+<button class="button" onclick="votar('gaseosa1')">Votar</button>
+<span id="gaseosa1">0</span>
+</div>
+
+<div>
+<p>Opción 2</p>
+<button class="button" onclick="votar('gaseosa2')">Votar</button>
+<span id="gaseosa2">0</span>
+</div>
+
+<div>
+<p>Opción 3</p>
+<button class="button" onclick="votar('gaseosa3')">Votar</button>
+<span id="gaseosa3">0</span>
+</div>
+
+<hr>
+
+<h2>🧃 Jugos</h2>
+
+<div>
+<p>Opción 1</p>
+<button class="button" onclick="votar('jugo1')">Votar</button>
+<span id="jugo1">0</span>
+</div>
+
+<div>
+<p>Opción 2</p>
+<button class="button" onclick="votar('jugo2')">Votar</button>
+<span id="jugo2">0</span>
+</div>
+
+<div>
+<p>Opción 3</p>
+<button class="button" onclick="votar('jugo3')">Votar</button>
+<span id="jugo3">0</span>
+</div>
+
+<br>
+
+<button class="button" onclick="location.href='index.html'">
+⬅ Volver al inicio
+</button>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
+  authDomain: "lacrucena-db.firebaseapp.com",
+  databaseURL: "https://lacrucena-db-default-rtdb.firebaseio.com",
+  projectId: "lacrucena-db",
+  storageBucket: "lacrucena-db.firebasestorage.app",
+  messagingSenderId: "808407017494",
+  appId: "1:808407017494:web:3202e7a9ee67e8d625ed37"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const votosRef = ref(db, "votos");
+
+// 🔥 inicializar si no existe
+get(votosRef).then((snap) => {
+  if (!snap.exists()) {
+    set(votosRef, {
+      gaseosa1: 0,
+      gaseosa2: 0,
+      gaseosa3: 0,
+      jugo1: 0,
+      jugo2: 0,
+      jugo3: 0
+    });
+  }
+});
+
+// 📊 escuchar cambios en vivo
+onValue(votosRef, (snap) => {
+  const data = snap.val();
+
+  for (let key in data) {
+    const el = document.getElementById(key);
+    if (el) el.innerText = data[key];
+  }
+});
+
+// 🟢 función de voto
+window.votar = async function(opcion) {
+  const snap = await get(votosRef);
+  let data = snap.val();
+
+  data[opcion] = (data[opcion] || 0) + 1;
+
+  await set(votosRef, data);
+};
+</script>
+
+</body>
+</html>
