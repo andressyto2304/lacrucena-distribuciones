@@ -30,8 +30,8 @@
 <input id="w" placeholder="WhatsApp" required><br><br>
 <textarea id="d" placeholder="Dirección" required></textarea><br><br>
 
-<!-- Monto ahora SIEMPRE editable -->
-<input id="m" type="number" placeholder="Monto a aportar" required><br><br>
+<!-- monto -->
+<input id="m" type="number" required><br><br>
 
 <hr>
 
@@ -51,7 +51,6 @@
 
 <hr>
 
-<!-- BOTÓN BLOQUEADO -->
 <button id="sendBtn" class="button" disabled>
 Enviar a WhatsApp
 </button>
@@ -79,41 +78,46 @@ const db = getDatabase(app);
 
 const totalRef = ref(db, "total");
 
-// Monto desde URL
+// URL monto
 const params = new URLSearchParams(window.location.search);
 let montoURL = params.get("monto");
 
-// ELEMENTOS
+// elementos
 const detalle = document.getElementById("detalle");
 const montoInput = document.getElementById("m");
 
-// 🔥 DONACIÓN LIBRE vs PAQUETES
-if (montoURL == null || montoURL == 0) {
+// convertir seguro
+let montoNum = Number(montoURL);
+
+// 🔥 LOGICA CORRECTA
+if (!montoURL || montoNum === 0 || isNaN(montoNum)) {
 
   detalle.innerText = "💚 Gracias por tu aporte libre, cualquier monto nos ayuda a crecer.";
-  
-  // habilitar edición manual
   montoInput.value = "";
   montoInput.placeholder = "Escribe tu aporte";
 
-} else if (montoURL == 150) {
+} else if (montoNum === 150) {
+
   detalle.innerText = "📦 Paquete Nº 1: 2 gaseosas de degustación. Recibe en tu domicilio o empresa.";
   montoInput.value = 150;
 
-} else if (montoURL == 300) {
+} else if (montoNum === 300) {
+
   detalle.innerText = "📦 Paquete Nº 2: 2 gaseosas + 1 jugo 3L. Recibe en tu domicilio o empresa.";
   montoInput.value = 300;
 
-} else if (montoURL == 500) {
+} else if (montoNum === 500) {
+
   detalle.innerText = "📦 Paquete Nº 3: 2 gaseosas + 2 jugos + gorra co-fundador. Recibe en tu domicilio o empresa.";
   montoInput.value = 500;
 
-} else if (montoURL == 1000) {
+} else if (montoNum === 1000) {
+
   detalle.innerText = "📦 Paquete Nº 4: 3 gaseosas + 3 jugos + gorra + polera co-fundador. Recibe en tu domicilio o empresa.";
   montoInput.value = 1000;
 }
 
-// DESCARGAR QR
+// descargar QR
 window.descargarQR = function(){
   const a = document.createElement("a");
   a.href = "qr.png";
@@ -121,7 +125,7 @@ window.descargarQR = function(){
   a.click();
 };
 
-// COMPROBANTE → desbloqueo botón
+// desbloqueo botón
 const fileInput = document.getElementById("comprobante");
 const sendBtn = document.getElementById("sendBtn");
 
@@ -131,7 +135,7 @@ fileInput.addEventListener("change", ()=>{
   }
 });
 
-// ENVIAR WHATSAPP + FIREBASE
+// enviar whatsapp
 sendBtn.addEventListener("click", async (e)=>{
 e.preventDefault();
 
@@ -145,19 +149,18 @@ if(!montoFinal || montoFinal <= 0){
   return;
 }
 
-// Firebase suma total
 let snap = await get(totalRef);
 let total = snap.val() || 0;
 
 await set(totalRef, total + montoFinal);
 
-// WhatsApp correcto
 let msg =
 `Aporte:%0ANombre: ${nombre}%0AMonto: ${montoFinal} Bs%0ADirección: ${direccion}`;
 
 window.location.href =
 "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
 });
+
 </script>
 
 </body>
