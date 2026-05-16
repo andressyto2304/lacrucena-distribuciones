@@ -1,110 +1,76 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LA CRUCEÑA DISTRIBUCIONES</title>
 
-<style>
-
-body{
-    margin:0;
-    padding:20px;
-    background:#000;
-    color:#fff;
-    font-family:Arial,sans-serif;
-}
-
-.container{
-    max-width:700px;
-    margin:auto;
-    background:#111;
-    padding:25px;
-    border-radius:15px;
-}
-
-h1,h2,h3{
-    text-align:center;
-}
-
-.button{
-    width:100%;
-    padding:15px;
-    border:none;
-    border-radius:10px;
-    background:#00cc44;
-    color:#fff;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
-    margin-top:15px;
-}
-
-.center{
-    text-align:center;
-}
-
-progress{
-    width:100%;
-    height:25px;
-}
-
-</style>
-
-</head>
 <link rel="stylesheet" href="styles.css">
-    
+</head>
+
 <body>
 
 <div class="container">
 
-<h1>🙌 Apóyanos a Cumplir un Sueño</h1>
+<h1>🥤 LA CRUCEÑA DISTRIBUCIONES</h1>
 
 <p>
-Bienvenido, nosotros somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong> y estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas aquí en nuestra ciudad Santa Cruz de la Sierra con buena calidad y precios accesibles para toda nuestra gente.
+Bienvenido, nosotros somos LA CRUCEÑA DISTRIBUCIONES y estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas en Santa Cruz de la Sierra con buena calidad y precios accesibles para toda nuestra gente.
 </p>
 
-<p>
-Tu aporte por pequeño o grande que sea nos acerca cada vez más para cumplir este sueño. Únete a nosotros como co-fundador adquiriendo uno de nuestros paquetes promocionales.
-</p>
+<hr>
 
-<div class="center">
+<h2>🎯 Progreso del proyecto</h2>
 
-<img src="logo.png"
-style="width:150px;border-radius:20px;border:2px solid #00cc44;">
-
-</div>
+<progress id="barra" value="0" max="105000"></progress>
+<p id="porcentaje">0%</p>
 
 <br>
 
-<h3>🎯 Progreso del Proyecto</h3>
+<button class="button" onclick="location.href='paquetes.html'">
+📦 Ver paquetes
+</button>
 
-<progress value="0" max="100"></progress>
+<button class="button" onclick="location.href='formulario.html?paquete=Libre&monto=0'">
+💚 Donación libre
+</button>
 
-<p class="center">0% completado</p>
-
-<div class="package center">
-
-<h3>🚀 Elige el paquete promocional de tu preferencia</h3>
-
-<p>
-Gracias por apoyarnos con tu granito de arena.  
-Juntos creceremos inmensamente.
-</p>
+<button class="button" onclick="window.open('https://wa.me/59175166467')">
+📲 Atención al cliente
+</button>
 
 </div>
 
-<a href="paquetes.html">
-<button class="button">🚀 Ver Paquetes Promocionales</button>
-</a>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-<br><br>
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://TU_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId: "TU_PROJECT_ID",
+  storageBucket: "TU_PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "XXX",
+  appId: "TU_APP_ID"
+};
 
-<a href="https://wa.me/59175166467" target="_blank">
-<button class="button">💬 Tienes dudas, contáctanos</button>
-</a>
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-</div>
+const totalRef = ref(db, "total");
+
+onValue(totalRef, (snapshot) => {
+    let total = snapshot.val() || 0;
+
+    document.getElementById("barra").value = total;
+
+    let porcentaje = (total / 105000) * 100;
+    document.getElementById("porcentaje").innerText =
+        porcentaje.toFixed(2) + "% completado";
+});
+</script>
 
 </body>
 </html>
