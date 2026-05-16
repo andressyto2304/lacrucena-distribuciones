@@ -67,7 +67,7 @@ Enviar a WhatsApp
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
@@ -83,8 +83,9 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const totalRef = ref(db, "total");
+const cofRef = ref(db, "cofundadores");
 
-// QR
+// QR download
 window.descargarQR = function(){
   const a = document.createElement("a");
   a.href = "qr.png";
@@ -121,7 +122,7 @@ function generarCodigo(monto, nombre, ap1, ap2){
   return `CP-${monto}-${iniciales.toUpperCase()}${numero}`;
 }
 
-// BOTÓN
+// BOTÓN PRINCIPAL
 document.getElementById("sendBtn").addEventListener("click", async (e)=>{
 e.preventDefault();
 
@@ -137,13 +138,23 @@ if(!montoFinal || montoFinal <= 0){
   return;
 }
 
-// Firebase total
+// total global
 let snap = await get(totalRef);
 let total = snap.val() || 0;
 await set(totalRef, total + montoFinal);
 
-// código CP
+// código cofundador
 let codigo = generarCodigo(montoFinal, nombre, ap1, ap2);
+
+// GUARDAR COFUNDADOR EN TIEMPO REAL
+await push(cofRef, {
+  nombre: nombre,
+  apellidos: ap1 + " " + ap2,
+  monto: montoFinal,
+  codigo: codigo,
+  direccion: direccion,
+  fecha: new Date().toISOString()
+});
 
 // mensaje WhatsApp
 let msg =
@@ -154,7 +165,7 @@ Código co-fundador: ${codigo}
 Dirección: ${direccion}
 📌 Envía tu comprobante por este chat`;
 
-// OVERLAY (MENSAJE ORIGINAL RESTAURADO)
+// OVERLAY
 const overlay = document.createElement("div");
 overlay.style.position = "fixed";
 overlay.style.top = "0";
@@ -176,18 +187,17 @@ overlay.innerHTML = `
 <h2>💚 Gracias por decidir ser parte de nuestros co-fundadores</h2>
 
 <p style="max-width:650px; line-height:1.6;">
-Como último regalo en agradecimiento de parte de la familia de LA CRUCEÑA DISTRIBUIDORES te ofrecemos un descuento con entrega a domicilio del 10% en todos tus pedidos que realices durante 6 meses a partir del lanzamiento de la fábrica y producción.
+Como último regalo en agradecimiento de parte de la familia de LA CRUCEÑA DISTRIBUIDORES te ofrecemos un descuento con entrega a domicilio del 10% en todos tus pedidos durante 6 meses a partir del lanzamiento de la fábrica y producción.
 </p>
 
 <br>
 
-<h1 style="color:#00ff88; font-size:32px; letter-spacing:2px;">
+<h1 style="color:#00ff88; font-size:34px;">
 ${codigo}
 </h1>
 
-<p style="margin-top:10px; font-weight:bold; color:#ffcc00;">
-⚠ Este código es único y valida tu promoción  
-No lo pierdas, sin él no podrás activar tus beneficios
+<p style="color:#ffcc00; font-weight:bold;">
+⚠ Este código es único y valida tu promoción. No lo pierdas.
 </p>
 
 <br>
@@ -208,7 +218,7 @@ cursor:pointer;">
 
 document.body.appendChild(overlay);
 
-// REDIRIGIR SOLO AQUÍ
+// REDIRIGIR
 document.getElementById("aceptoBtn").onclick = function(){
   window.location.href =
   "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
