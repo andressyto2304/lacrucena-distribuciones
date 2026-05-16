@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finalizar aporte</title>
-
 <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -34,8 +33,7 @@
 
 <hr>
 
-<h2>💳 Escanea para aportar</h2>
-
+<h2>💳 QR de pago</h2>
 <img src="qr.png" width="200"><br><br>
 
 <button type="button" class="button" onclick="descargarQR()">
@@ -45,7 +43,6 @@
 <hr>
 
 <h2>📤 Subir comprobante</h2>
-
 <input type="file" id="comprobante" accept="image/*"><br><br>
 
 <hr>
@@ -60,7 +57,8 @@ Enviar a WhatsApp
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
@@ -74,10 +72,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const storage = getStorage(app);
 
 const totalRef = ref(db, "total");
+const fundadoresRef = ref(db, "fundadores");
 
-// monto URL
+// --------------------
+// DETALLE DE PAQUETE
+// --------------------
 const params = new URLSearchParams(window.location.search);
 let montoURL = params.get("monto");
 
@@ -86,11 +88,9 @@ const montoInput = document.getElementById("m");
 
 let montoNum = Number(montoURL);
 
-// DETALLE
 if (!montoURL || montoNum === 0 || isNaN(montoNum)) {
 
   detalle.innerText = "💚 Gracias por tu aporte libre, cualquier monto nos ayuda a crecer.";
-  montoInput.value = "";
   montoInput.placeholder = "Escribe tu aporte";
 
 } else if (montoNum === 150) {
@@ -114,7 +114,9 @@ if (!montoURL || montoNum === 0 || isNaN(montoNum)) {
   montoInput.value = 1000;
 }
 
-// QR download
+// --------------------
+// DESCARGAR QR
+// --------------------
 window.descargarQR = function(){
   const a = document.createElement("a");
   a.href = "qr.png";
@@ -122,7 +124,9 @@ window.descargarQR = function(){
   a.click();
 };
 
-// habilitar botón solo con comprobante
+// --------------------
+// BOTÓN HABILITAR
+// --------------------
 const fileInput = document.getElementById("comprobante");
 const sendBtn = document.getElementById("sendBtn");
 
@@ -132,13 +136,15 @@ fileInput.addEventListener("change", ()=>{
   }
 });
 
-// CLICK EN ENVIAR → muestra pantalla de confirmación
+// --------------------
+// ENVIAR
+// --------------------
 sendBtn.addEventListener("click", async (e)=>{
 e.preventDefault();
 
-let nombre = document.getElementById("n").value;
-let whatsapp = document.getElementById("w").value;
-let direccion = document.getElementById("d").value;
+let nombre = document.getElementById("n").value || "No registrado";
+let whatsapp = document.getElementById("w").value || "";
+let direccion = document.getElementById("d").value || "";
 let montoFinal = parseInt(document.getElementById("m").value);
 
 if(!montoFinal || montoFinal <= 0){
@@ -146,63 +152,51 @@ if(!montoFinal || montoFinal <= 0){
   return;
 }
 
-// Firebase
+// --------------------
+// SUBIR COMPROBANTE
+// --------------------
+let file = fileInput.files[0];
+let url = "";
+
+if(file){
+  let fileRef = sRef(storage, "comprobantes/" + Date.now() + "_" + file.name);
+  await uploadBytes(fileRef, file);
+  url = await getDownloadURL(fileRef);
+}
+
+// --------------------
+// GUARDAR CO-FUNDADOR
+// --------------------
+await push(fundadoresRef, {
+  nombre,
+  whatsapp,
+  direccion,
+  monto: montoFinal,
+  comprobante: url,
+  fecha: Date.now()
+});
+
+// --------------------
+// SUMAR TOTAL
+// --------------------
 let snap = await get(totalRef);
 let total = snap.val() || 0;
-
 await set(totalRef, total + montoFinal);
 
-// OVERLAY
-const overlay = document.createElement("div");
-overlay.style.position = "fixed";
-overlay.style.top = "0";
-overlay.style.left = "0";
-overlay.style.width = "100%";
-overlay.style.height = "100%";
-overlay.style.background = "rgba(0,0,0,0.85)";
-overlay.style.color = "white";
-overlay.style.display = "flex";
-overlay.style.alignItems = "center";
-overlay.style.justifyContent = "center";
-overlay.style.textAlign = "center";
-overlay.style.padding = "20px";
-overlay.style.zIndex = "9999";
-
-overlay.innerHTML = `
-<div>
-<h2>💚 Gracias por decidir ser parte de nuestros co-fundadores</h2>
-
-<p style="max-width:600px; line-height:1.6;">
-Como último regalo en agradecimiento de parte de la familia de LA CRUCEÑA DISTRIBUIDORES te ofrecemos un descuento con entrega a domicilio del 10% en todos tus pedidos durante 6 meses a partir del lanzamiento de la fábrica y producción.
-</p>
-
-<br>
-
-<button id="aceptoBtn" style="
-padding:12px 20px;
-background:#28a745;
-color:white;
-border:none;
-border-radius:8px;
-font-size:16px;
-cursor:pointer;">
-✔ Acepto y continuar a WhatsApp
-</button>
-</div>
-`;
-
-document.body.appendChild(overlay);
-
-// BOTÓN MANUAL
-document.getElementById("aceptoBtn").onclick = function(){
-
+// --------------------
+// WHATSAPP
+// --------------------
 let msg =
-`Aporte:%0ANombre: ${nombre}%0AMonto: ${montoFinal} Bs%0ADirección: ${direccion}`;
+`💚 Aporte recibido
+Nombre: ${nombre}
+Monto: ${montoFinal} Bs
+Dirección: ${direccion}
+
+📎 Comprobante enviado al sistema`;
 
 window.location.href =
 "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
 
-};
 });
 </script>
 
