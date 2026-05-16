@@ -23,7 +23,7 @@
 
 <h2>🧾 Tus datos</h2>
 
-<form id="f">
+<form id="formulario">
 
 <input id="n" placeholder="Nombre" required><br><br>
 <input id="w" placeholder="WhatsApp" required><br><br>
@@ -99,7 +99,9 @@ if (!montoURL || montoNum === 0 || isNaN(montoNum)) {
   montoInput.value = montoNum;
 }
 
-// ---------------- BOTÓN ----------------
+// ---------------- BOTÓN (IMPORTANTE) ----------------
+window.addEventListener("DOMContentLoaded", () => {
+
 const fileInput = document.getElementById("comprobante");
 const sendBtn = document.getElementById("sendBtn");
 
@@ -107,8 +109,10 @@ fileInput.addEventListener("change", ()=>{
   sendBtn.disabled = fileInput.files.length === 0;
 });
 
-// ---------------- CLICK ENVIAR ----------------
-sendBtn.addEventListener("click", async ()=>{
+// CLICK SEGURO
+sendBtn.addEventListener("click", async (e)=> {
+
+e.preventDefault();
 
 let nombre = document.getElementById("n").value || "No registrado";
 let whatsapp = document.getElementById("w").value || "";
@@ -120,7 +124,7 @@ if(!montoFinal || montoFinal <= 0){
   return;
 }
 
-// subir comprobante
+// subir imagen
 let file = fileInput.files[0];
 let url = "";
 
@@ -130,7 +134,7 @@ if(file){
   url = await getDownloadURL(fileRef);
 }
 
-// guardar en DB
+// guardar cofundador
 await push(fundadoresRef, {
   nombre,
   whatsapp,
@@ -140,12 +144,12 @@ await push(fundadoresRef, {
   fecha: Date.now()
 });
 
-// sumar total
+// total
 let snap = await get(totalRef);
 let total = snap.val() || 0;
 await set(totalRef, total + montoFinal);
 
-// 🔥 WHATSAPP DIRECTO (SIN BLOQUEOS)
+// whatsapp
 let msg =
 `💚 Aporte recibido
 Nombre: ${nombre}
@@ -155,6 +159,8 @@ Dirección: ${direccion}
 
 window.location.href =
 "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
+
+});
 
 });
 
