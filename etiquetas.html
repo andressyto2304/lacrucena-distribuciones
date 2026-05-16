@@ -13,6 +13,11 @@ font-family:Arial;
 padding:20px;
 }
 
+h1{
+text-align:center;
+color:#00ff88;
+}
+
 .card{
 background:#111;
 border:1px solid #00ff88;
@@ -22,7 +27,7 @@ border-radius:10px;
 }
 
 button{
-padding:10px;
+padding:12px;
 background:#00cc44;
 color:white;
 border:none;
@@ -30,6 +35,7 @@ border-radius:8px;
 cursor:pointer;
 width:100%;
 margin-top:10px;
+font-size:16px;
 }
 </style>
 </head>
@@ -84,7 +90,7 @@ let votos = {
   g3: 0
 };
 
-// Cargar votos en tiempo real
+// 🔄 VOTOS EN TIEMPO REAL
 onValue(votosRef, (snapshot)=>{
 
   const data = snapshot.val();
@@ -110,17 +116,16 @@ onValue(votosRef, (snapshot)=>{
     "🏆 Etiqueta líder: " + ganador.toUpperCase();
 });
 
-// 🧠 BLOQUEO ANTI-SPAM
+// 🔒 BLOQUEO ANTI-SPAM
 function yaVoto(opcion){
   return localStorage.getItem("voto_" + opcion);
 }
 
-// VOTAR
+// 🗳 VOTAR
 window.votar = function(opcion){
 
-  // 🔒 BLOQUEO
   if (yaVoto(opcion)) {
-    alert("⚠ Ya votaste por esta etiqueta desde este dispositivo");
+    alert("⚠ Ya votaste desde este dispositivo");
     return;
   }
 
@@ -132,10 +137,13 @@ window.votar = function(opcion){
 
   set(votosRef, votos);
 
-  // guardar bloqueo local
   localStorage.setItem("voto_" + opcion, "1");
 
-  alert("💚 Voto registrado correctamente");
+  alert("💚 Gracias por votar. Ahora elige tu paquete promocional");
+
+  setTimeout(() => {
+    window.location.href = "paquetes.html";
+  }, 800);
 };
 
 </script>
