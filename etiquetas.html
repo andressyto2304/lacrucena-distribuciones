@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Votación Segura</title>
+<title>Votación de Etiquetas</title>
 
 <style>
 body{
@@ -20,6 +20,13 @@ margin:auto;
 background:#111;
 padding:20px;
 border-radius:15px;
+}
+
+.section{
+margin-top:20px;
+padding:15px;
+border:1px solid #333;
+border-radius:10px;
 }
 
 button{
@@ -39,25 +46,14 @@ width:100%;
 border-radius:10px;
 }
 
-.section{
-margin-top:20px;
-padding:15px;
-border:1px solid #333;
-border-radius:10px;
-}
-
-/* ADMIN */
-#adminPanel{
-display:none;
-position:fixed;
-top:0;
-left:0;
+textarea{
 width:100%;
-height:100%;
+padding:10px;
+margin-top:10px;
+border-radius:8px;
 background:#000;
-overflow:auto;
-padding:20px;
-z-index:9999;
+color:#fff;
+border:1px solid #333;
 }
 </style>
 
@@ -67,10 +63,19 @@ z-index:9999;
 
 <div class="card">
 
-<h1>🗳️ Votación Segura</h1>
+<h1>🗳️ Votación de Etiquetas</h1>
 
-<div id="status"></div>
+<!-- REGLAS -->
+<div class="section">
+<h3>📌 Reglas de votación</h3>
+<p>
+✔ Puedes votar 1 vez en <b>Gaseosas</b><br>
+✔ Puedes votar 1 vez en <b>Jugos</b><br>
+✔ Votos duplicados serán bloqueados automáticamente
+</p>
+</div>
 
+<!-- GASEOSAS -->
 <div class="section">
 <h2>🥤 Gaseosas</h2>
 
@@ -80,6 +85,7 @@ z-index:9999;
 
 </div>
 
+<!-- JUGOS -->
 <div class="section">
 <h2>🧃 Jugos</h2>
 
@@ -89,26 +95,21 @@ z-index:9999;
 
 </div>
 
+<!-- COMENTARIOS -->
+<div class="section">
+<h2>💬 Comentarios de votantes</h2>
+
+<textarea id="comment" placeholder="Escribe tu opinión o sugerencia..."></textarea>
+<button onclick="sendComment()">Enviar comentario</button>
+
 </div>
-
-<!-- ADMIN -->
-<div id="adminPanel">
-
-<h1>🔐 ADMIN PANEL</h1>
-
-<h3>👥 Usuarios registrados</h3>
-<div id="userList"></div>
-
-<button onclick="document.getElementById('adminPanel').style.display='none'">
-Cerrar
-</button>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
@@ -125,10 +126,9 @@ const db = getDatabase(app);
 
 const usersRef = ref(db,"usuarios");
 const votesRef = ref(db,"votos");
+const commentsRef = ref(db,"comentarios");
 
-// =============================
-// 1. GENERAR ID ÚNICO
-// =============================
+// ID único
 function getUserId(){
 let id = localStorage.getItem("uid");
 if(!id){
@@ -140,40 +140,22 @@ return id;
 
 const uid = getUserId();
 
-// =============================
-// 2. VERIFICAR SI YA VOTÓ
-// =============================
-let userData = null;
-
-onValue(usersRef,(snap)=>{
-userData = snap.val() || {};
-if(userData[uid]?.voted){
-document.getElementById("status").innerHTML =
-"⚠️ Ya has votado anteriormente";
-}
-});
-
-// =============================
-// 3. VOTAR
-// =============================
+// ================= VOTAR =================
 window.vote = async function(option){
 
-// bloqueo real
 const snap = await get(ref(db,"usuarios/"+uid));
 
 if(snap.exists() && snap.val().voted){
-alert("Ya votaste, acceso bloqueado");
+alert("Ya votaste");
 return;
 }
 
-// guardar usuario
 await set(ref(db,"usuarios/"+uid),{
 voted:true,
 vote:option,
 date:Date.now()
 });
 
-// guardar voto global
 const voteSnap = await get(votesRef);
 let votes = voteSnap.val() || {};
 
@@ -181,48 +163,30 @@ votes[option] = (votes[option]||0)+1;
 
 await set(votesRef,votes);
 
-alert("✅ Voto registrado correctamente");
-
+alert("Voto registrado");
 };
 
-// =============================
-// 4. ADMIN PANEL
-// =============================
-const url = new URLSearchParams(window.location.search);
+// ================= COMENTARIOS =================
+window.sendComment = async function(){
 
-if(url.get("admin")==="CRUCENA2026"){
-document.getElementById("adminPanel").style.display="block";
+const text = document.getElementById("comment").value;
 
-onValue(usersRef,(snap)=>{
-
-const data = snap.val() || {};
-let html = "";
-
-Object.keys(data).forEach(k=>{
-html += `
-<div style="border-bottom:1px solid #333;padding:10px">
-<p><b>ID:</b> ${k}</p>
-<p><b>Voto:</b> ${data[k].vote}</p>
-
-<button onclick="deleteUser('${k}')">Eliminar bloqueo</button>
-</div>
-`;
-});
-
-document.getElementById("userList").innerHTML = html;
-
-});
-
+if(!text){
+alert("Escribe un comentario");
+return;
 }
 
-// eliminar usuario
-window.deleteUser = async function(id){
-await remove(ref(db,"usuarios/"+id));
-alert("Usuario desbloqueado");
+await push(commentsRef,{
+user:uid,
+text:text,
+date:Date.now()
+});
+
+document.getElementById("comment").value = "";
+alert("Comentario enviado");
 };
 
 </script>
 
 </body>
-
 </html>
