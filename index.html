@@ -58,18 +58,9 @@ p {
 progress {
   width: 100%;
   height: 25px;
-  transition: all 0.8s ease; /* 🔥 animación suave */
+  transition: all 0.6s ease;
 }
 
-img.logo {
-  width: 180px;
-  display: block;
-  margin: auto;
-  border-radius: 15px;
-  border: 2px solid #00cc44;
-}
-
-/* NUEVO: panel en vivo */
 .live {
   background: #0d0d0d;
   border: 1px solid #00cc44;
@@ -77,6 +68,13 @@ img.logo {
   border-radius: 10px;
   margin-top: 15px;
   text-align: center;
+}
+
+.cofundador {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid #222;
+  font-size: 14px;
 }
 
 .steps {
@@ -89,6 +87,14 @@ img.logo {
 .steps li {
   margin: 10px 0;
 }
+
+.logo {
+  width: 200px;
+  display: block;
+  margin: auto;
+  border-radius: 15px;
+  border: 2px solid #00cc44;
+}
 </style>
 </head>
 
@@ -96,22 +102,22 @@ img.logo {
 
 <div class="card">
 
-<img src="logo.png" style="width:200px; display:block; margin:auto; border-radius:15px; border:2px solid #00cc44;">
+<img src="logo.png" class="logo">
 
 <h1>🙌 Bienvenido</h1>
 
 <p>
-Bienvenido, somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong>, este es nuestro emprendimiento aquí en Santa Cruz de la Sierra.
-Estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas con buena calidad y precios accesibles.
+Bienvenido, somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong>, emprendimiento en Santa Cruz de la Sierra.
+Estamos reuniendo fondos para una fábrica de jugos y gaseosas de calidad para nuestra gente.
 </p>
 
 <!-- PASOS -->
 <div class="steps">
 <h3>📌 Cómo participar</h3>
 <ul>
-<li>1️⃣ Ayúdanos a elegir etiquetas</li>
-<li>2️⃣ Escoge tu paquete</li>
-<li>3️⃣ Llena formulario de recompensas</li>
+<li>1️⃣ Vota por etiquetas</li>
+<li>2️⃣ Elige tu paquete</li>
+<li>3️⃣ Llena tu formulario</li>
 <li>4️⃣ Envía tu aporte</li>
 </ul>
 </div>
@@ -123,11 +129,17 @@ Estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas 
 <p><span id="progressText">0%</span> completado</p>
 </div>
 
-<!-- NUEVO: ESTADÍSTICAS EN VIVO -->
+<!-- ESTADÍSTICAS -->
 <div class="live">
 <p>💰 Total recaudado: <span id="totalDonado">0</span> Bs</p>
-<p>📊 Número de donaciones: <span id="contadorDonaciones">0</span></p>
+<p>📊 Donaciones: <span id="contadorDonaciones">0</span></p>
 <p>🔥 Última donación: <span id="ultimaDonacion">--</span></p>
+</div>
+
+<!-- COFUNDADORES -->
+<div class="live">
+<h3>👥 Últimos 15 cofundadores</h3>
+<div id="listaCofundadores">Cargando...</div>
 </div>
 
 <!-- BOTONES -->
@@ -135,7 +147,7 @@ Estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas 
 <a href="paquetes.html" class="button">🚀 Ver paquetes</a>
 
 <a href="https://wa.me/59175166467" class="button" style="background:#25D366;">
-💬 Contacto WhatsApp
+💬 WhatsApp contacto
 </a>
 
 </div>
@@ -162,47 +174,69 @@ const donacionesRef = ref(db, "donaciones");
 
 const goal = 105000;
 
-// valores actuales
-let totalActual = 0;
-
-// 🔄 tiempo real
+// 🔄 TIEMPO REAL
 onValue(donacionesRef, (snapshot) => {
 
   const data = snapshot.val();
 
   let total = 0;
   let contador = 0;
-  let ultima = "Sin datos";
+  let ultima = "--";
+
+  let lista = [];
 
   if (data) {
 
     const keys = Object.keys(data);
     contador = keys.length;
 
-    keys.forEach((k) => {
+    keys.forEach(k => {
       const d = data[k];
       const monto = Number(d.monto) || 0;
+
       total += monto;
+
+      lista.push(d);
     });
 
     // última donación
-    const lastKey = keys[keys.length - 1];
-    ultima = data[lastKey].monto + " Bs";
+    const last = keys[keys.length - 1];
+    ultima = data[last].nombre + " - " + data[last].monto + " Bs";
   }
 
-  // contador
+  // UI stats
+  document.getElementById("totalDonado").innerText = total;
   document.getElementById("contadorDonaciones").innerText = contador;
   document.getElementById("ultimaDonacion").innerText = ultima;
-  document.getElementById("totalDonado").innerText = total;
 
-  // 🎯 barra suave (animación)
+  // barra animada
   let target = (total / goal) * 100;
   if (target > 100) target = 100;
 
   animateBar(target);
+
+  // lista cofundadores
+  lista.reverse();
+  lista = lista.slice(0, 15);
+
+  const cont = document.getElementById("listaCofundadores");
+  cont.innerHTML = "";
+
+  lista.forEach(d => {
+
+    const div = document.createElement("div");
+    div.className = "cofundador";
+
+    div.innerHTML = `
+      💚 <b>${d.nombre || "Anónimo"}</b> - ${d.monto || 0} Bs
+    `;
+
+    cont.appendChild(div);
+  });
+
 });
 
-// 🔥 animación suave de barra
+// 🔥 barra fluida
 function animateBar(target) {
 
   let bar = document.getElementById("progressBar");
