@@ -3,77 +3,65 @@
 
 <head>
 <meta charset="UTF-8">
-<title>Votación de etiquetas</title>
-<link rel="stylesheet" href="styles.css">
+<title>Votación de Etiquetas</title>
+
+<style>
+body{
+background:#000;
+color:#fff;
+font-family:Arial;
+padding:20px;
+}
+
+.card{
+background:#111;
+border:1px solid #00ff88;
+padding:15px;
+margin:10px 0;
+border-radius:10px;
+}
+
+button{
+padding:10px;
+background:#00cc44;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+width:100%;
+margin-top:10px;
+}
+</style>
 </head>
 
 <body>
 
-<div class="container">
+<h1>🥤 Votación de Etiquetas</h1>
 
-<img src="logo.png" width="160">
-
-<h1>🏷️ Votación de etiquetas</h1>
-
-<p style="max-width:700px; margin: 0 auto; line-height:1.6;">
-Ya eres parte de nosotros 🙌  
-decide con nosotros y elige la opción que creas mejor para representar nuestra marca.  
-Tu opinión forma parte de este sueño.
-</p>
-
-<hr>
-
-<h2>🥤 Gaseosas</h2>
-
-<div>
-<img src="gaseosa 1.png" width="140"><br>
-<button class="button" onclick="votar('g1')">Votar</button>
-<span id="g1">0</span>
+<div class="card">
+<img src="gaseosa 1.png" width="100%">
+<button onclick="votar('g1')">Votar Etiqueta 1</button>
+<p>Votos: <span id="g1">0</span></p>
 </div>
 
-<div>
-<img src="gaseosa 2.jpg" width="140"><br>
-<button class="button" onclick="votar('g2')">Votar</button>
-<span id="g2">0</span>
+<div class="card">
+<img src="gaseosa 2.jpg" width="100%">
+<button onclick="votar('g2')">Votar Etiqueta 2</button>
+<p>Votos: <span id="g2">0</span></p>
 </div>
 
-<div>
-<img src="gaseosa 3.png" width="140"><br>
-<button class="button" onclick="votar('g3')">Votar</button>
-<span id="g3">0</span>
+<div class="card">
+<img src="gaseosa 3.png" width="100%">
+<button onclick="votar('g3')">Votar Etiqueta 3</button>
+<p>Votos: <span id="g3">0</span></p>
 </div>
 
-<h2>🧃 Jugos</h2>
-
-<div>
-<img src="jugo 1.png" width="140"><br>
-<button class="button" onclick="votar('j1')">Votar</button>
-<span id="j1">0</span>
-</div>
-
-<div>
-<img src="jugo 2.png" width="140"><br>
-<button class="button" onclick="votar('j2')">Votar</button>
-<span id="j2">0</span>
-</div>
-
-<div>
-<img src="jugo 3.png" width="140"><br>
-<button class="button" onclick="votar('j3')">Votar</button>
-<span id="j3">0</span>
-</div>
-
-<hr>
-
-<button class="button" onclick="location.href='paquetes.html'">
-➡ Continuar a paquetes
-</button>
-
-</div>
+<h2 id="ganador">🏆 Cargando ganador...</h2>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
@@ -90,29 +78,66 @@ const db = getDatabase(app);
 
 const votosRef = ref(db, "votos");
 
-get(votosRef).then(snap=>{
-  if(!snap.exists()){
-    set(votosRef,{
-      g1:0,g2:0,g3:0,
-      j1:0,j2:0,j3:0
-    });
-  }
-});
-
-onValue(votosRef,(snap)=>{
-  const d = snap.val();
-  for(let k in d){
-    const el = document.getElementById(k);
-    if(el) el.innerText = d[k];
-  }
-});
-
-window.votar = async function(op){
-  const snap = await get(votosRef);
-  let d = snap.val();
-  d[op]++;
-  await set(votosRef,d);
+let votos = {
+  g1: 0,
+  g2: 0,
+  g3: 0
 };
+
+// Cargar votos en tiempo real
+onValue(votosRef, (snapshot)=>{
+
+  const data = snapshot.val();
+
+  if (data) {
+    votos = {
+      g1: Number(data.g1) || 0,
+      g2: Number(data.g2) || 0,
+      g3: Number(data.g3) || 0
+    };
+  }
+
+  document.getElementById("g1").innerText = votos.g1;
+  document.getElementById("g2").innerText = votos.g2;
+  document.getElementById("g3").innerText = votos.g3;
+
+  let ganador = "g1";
+
+  if (votos.g2 > votos[ganador]) ganador = "g2";
+  if (votos.g3 > votos[ganador]) ganador = "g3";
+
+  document.getElementById("ganador").innerText =
+    "🏆 Etiqueta líder: " + ganador.toUpperCase();
+});
+
+// 🧠 BLOQUEO ANTI-SPAM
+function yaVoto(opcion){
+  return localStorage.getItem("voto_" + opcion);
+}
+
+// VOTAR
+window.votar = function(opcion){
+
+  // 🔒 BLOQUEO
+  if (yaVoto(opcion)) {
+    alert("⚠ Ya votaste por esta etiqueta desde este dispositivo");
+    return;
+  }
+
+  if (!votos[opcion] || isNaN(votos[opcion])) {
+    votos[opcion] = 0;
+  }
+
+  votos[opcion] = Number(votos[opcion]) + 1;
+
+  set(votosRef, votos);
+
+  // guardar bloqueo local
+  localStorage.setItem("voto_" + opcion, "1");
+
+  alert("💚 Voto registrado correctamente");
+};
+
 </script>
 
 </body>
