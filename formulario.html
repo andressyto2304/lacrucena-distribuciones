@@ -17,30 +17,46 @@
 
 <h1>📲 Finalizar aporte</h1>
 
-<!-- DETALLE DEL PAQUETE -->
-<h2>📦 Detalle de tu selección</h2>
-<p id="detalle">Cargando paquete...</p>
+<!-- DETALLE -->
+<h2>📦 Detalle de tu aporte</h2>
+<p id="detalle">Cargando...</p>
+
+<hr>
+
+<!-- FORMULARIO -->
+<h2>🧾 Tus datos</h2>
+
+<form id="f">
+
+<input id="n" placeholder="Nombre" required><br><br>
+<input id="w" placeholder="WhatsApp" required><br><br>
+<textarea id="d" placeholder="Dirección" required></textarea><br><br>
+<input id="m" type="number" readonly><br><br>
 
 <hr>
 
 <!-- QR -->
 <h2>💳 Escanea para aportar</h2>
 
-<img src="qr.png" width="200" alt="QR de pago">
+<img src="qr.png" id="qrimg" width="200"><br><br>
 
-<p>Puedes escanear este código o descargarlo para realizar tu aporte.</p>
+<button type="button" class="button" onclick="descargarQR()">
+⬇ Descargar QR
+</button>
 
 <hr>
 
-<!-- FORMULARIO -->
-<form id="f">
+<!-- COMPROBANTE -->
+<h2>📤 Subir comprobante</h2>
 
-<input id="n" placeholder="Nombre" required><br><br>
-<input id="w" placeholder="WhatsApp" required><br><br>
-<textarea id="d" placeholder="Dirección" required></textarea><br><br>
-<input id="m" placeholder="Monto" type="number" required><br><br>
+<input type="file" id="comprobante" accept="image/*"><br><br>
 
-<button class="button">Enviar a WhatsApp</button>
+<hr>
+
+<!-- BOTÓN FINAL -->
+<button id="sendBtn" class="button" disabled>
+Enviar a WhatsApp
+</button>
 
 </form>
 
@@ -65,28 +81,46 @@ const db = getDatabase(app);
 
 const totalRef = ref(db, "total");
 
-// 🔥 OBTENER MONTO DESDE URL
+// URL monto
 const params = new URLSearchParams(window.location.search);
 let monto = params.get("monto") || 0;
 
-// 🔥 MOSTRAR DETALLE DEL PAQUETE
+document.getElementById("m").value = monto;
+
+// DETALLE DINÁMICO
 const detalle = document.getElementById("detalle");
 
 if (monto == 0) {
-  detalle.innerText = "💚 Donación libre — puedes aportar cualquier monto";
+  detalle.innerText = "💚 Gracias por tu aporte libre, cualquier monto nos ayuda a crecer.";
 } else if (monto == 150) {
-  detalle.innerText = "📦 Paquete Nº 1 - 150 Bs";
+  detalle.innerText = "📦 Paquete Nº 1: 2 gaseosas de degustación. Recibe tu promoción en la puerta de tu domicilio o empresa.";
 } else if (monto == 300) {
-  detalle.innerText = "📦 Paquete Nº 2 - 300 Bs";
+  detalle.innerText = "📦 Paquete Nº 2: 2 gaseosas + 1 jugo 3L. Recibe tu promoción en la puerta de tu domicilio o empresa.";
 } else if (monto == 500) {
-  detalle.innerText = "📦 Paquete Nº 3 - 500 Bs";
+  detalle.innerText = "📦 Paquete Nº 3: 2 gaseosas + 2 jugos + gorra co-fundador. Recibe tu promoción en la puerta de tu domicilio o empresa.";
 } else if (monto == 1000) {
-  detalle.innerText = "📦 Paquete Nº 4 - 1000 Bs";
+  detalle.innerText = "📦 Paquete Nº 4: 3 gaseosas + 3 jugos + gorra + polera co-fundador. Recibe tu promoción en la puerta de tu domicilio o empresa.";
 }
 
-document.getElementById("m").value = monto;
+// DESCARGAR QR
+window.descargarQR = function(){
+  const link = document.createElement("a");
+  link.href = "qr.png";
+  link.download = "qr.png";
+  link.click();
+};
 
-// 🔥 FORMULARIO + WHATSAPP + FIREBASE
+// ACTIVAR BOTÓN SOLO SI HAY COMPROBANTE
+const fileInput = document.getElementById("comprobante");
+const sendBtn = document.getElementById("sendBtn");
+
+fileInput.addEventListener("change", function(){
+  if(fileInput.files.length > 0){
+    sendBtn.disabled = false;
+  }
+});
+
+// ENVIAR
 document.getElementById("f").onsubmit = async (e)=>{
 e.preventDefault();
 
@@ -95,21 +129,21 @@ let whatsapp = document.getElementById("w").value;
 let direccion = document.getElementById("d").value;
 let montoFinal = parseInt(document.getElementById("m").value);
 
-// sumar a Firebase
 let snap = await get(totalRef);
 let total = snap.val() || 0;
 
 await set(totalRef, total + montoFinal);
 
-// mensaje WhatsApp
 let msg =
-`Aporte realizado:%0A
-Nombre: ${nombre}%0A
-Monto: ${montoFinal} Bs%0A
-Dirección: ${direccion}`;
+`Aporte:%0ANombre: ${nombre}%0AMonto: ${montoFinal} Bs%0ADirección: ${direccion}`;
 
 window.location.href =
 "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
+};
+
+// botón manual (porque submit está controlado)
+sendBtn.onclick = function(){
+document.getElementById("f").requestSubmit();
 };
 </script>
 
