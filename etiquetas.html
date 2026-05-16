@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Votación de Etiquetas</title>
+<title>Votación Segura</title>
 
 <style>
 body{
@@ -41,16 +41,9 @@ font-weight:bold;
 cursor:pointer;
 }
 
-img{
-width:100%;
-border-radius:10px;
-display:block;
-}
-
-.next-btn{
-background:#007bff;
-margin-top:25px;
-font-size:18px;
+.disabled{
+background:#444 !important;
+cursor:not-allowed;
 }
 </style>
 
@@ -60,54 +53,27 @@ font-size:18px;
 
 <div class="card">
 
-<h1 style="text-align:center;">🗳️ Votación de Etiquetas</h1>
+<h1>🗳️ Votación por Categorías</h1>
 
 <!-- GASEOSAS -->
 <div class="section">
-<h2>🥤 Gaseosas</h2>
+<h2>🥤 Gaseosas (1 solo voto)</h2>
 
-<div>
-<img src="gaseosa%201.png" onerror="this.src='gaseosa1.png'">
-<button onclick="vote('g1')">Votar Gaseosa 1</button>
-</div>
-
-<div>
-<img src="gaseosa%202.jpg" onerror="this.src='gaseosa2.jpg'">
-<button onclick="vote('g2')">Votar Gaseosa 2</button>
-</div>
-
-<div>
-<img src="gaseosa%203.png" onerror="this.src='gaseosa3.png'">
-<button onclick="vote('g3')">Votar Gaseosa 3</button>
-</div>
+<button id="g1" onclick="vote('gaseosa','g1')">Gaseosa 1</button>
+<button id="g2" onclick="vote('gaseosa','g2')">Gaseosa 2</button>
+<button id="g3" onclick="vote('gaseosa','g3')">Gaseosa 3</button>
 
 </div>
 
 <!-- JUGOS -->
 <div class="section">
-<h2>🧃 Jugos</h2>
+<h2>🧃 Jugos (1 solo voto)</h2>
 
-<div>
-<img src="jugo%201.png" onerror="this.src='jugo1.png'">
-<button onclick="vote('jugo1')">Votar Jugo 1</button>
-</div>
-
-<div>
-<img src="jugo%202.png" onerror="this.src='jugo2.png'">
-<button onclick="vote('jugo2')">Votar Jugo 2</button>
-</div>
-
-<div>
-<img src="jugo%203.png" onerror="this.src='jugo3.png'">
-<button onclick="vote('jugo3')">Votar Jugo 3</button>
-</div>
+<button id="j1" onclick="vote('jugo','j1')">Jugo 1</button>
+<button id="j2" onclick="vote('jugo','j2')">Jugo 2</button>
+<button id="j3" onclick="vote('jugo','j3')">Jugo 3</button>
 
 </div>
-
-<!-- BOTÓN SIGUIENTE -->
-<button class="next-btn" onclick="goNext()">
-➡ Siguiente: Paquetes Promocionales
-</button>
 
 </div>
 
@@ -129,27 +95,74 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const votosRef = ref(db,"votos");
+// ID único
+function getUserId(){
+let id = localStorage.getItem("uid");
+if(!id){
+id = "U_" + Math.random().toString(36).substring(2,12);
+localStorage.setItem("uid",id);
+}
+return id;
+}
 
-// votar
-window.vote = async function(id){
+const uid = getUserId();
 
-const snap = await get(votosRef);
-let votos = snap.val() || {};
+// VOTAR
+window.vote = async function(categoria, opcion){
 
-votos[id] = (votos[id]||0)+1;
+const userRef = ref(db,"usuarios/"+uid);
+const snap = await get(userRef);
+const data = snap.val() || {};
 
-await set(votosRef,votos);
+// BLOQUEO POR CATEGORÍA
+if(categoria === "gaseosa" && data.gaseosaVotado){
+alert("Ya votaste en gaseosas");
+return;
+}
 
-alert("Voto registrado");
-};
+if(categoria === "jugo" && data.jugoVotado){
+alert("Ya votaste en jugos");
+return;
+}
 
-// siguiente pagina
-window.goNext = function(){
-window.location.href = "paquetes.html";
+// guardar usuario
+if(categoria === "gaseosa"){
+await set(userRef,{
+...data,
+gaseosaVotado:true,
+gaseosa:opcion
+});
+}
+
+if(categoria === "jugo"){
+await set(userRef,{
+...data,
+jugoVotado:true,
+jugo:opcion
+});
+}
+
+alert("Voto registrado correctamente");
+
+// bloquear botones
+if(categoria === "gaseosa"){
+document.querySelectorAll("[id^='g']").forEach(b=>{
+b.disabled=true;
+b.classList.add("disabled");
+});
+}
+
+if(categoria === "jugo"){
+document.querySelectorAll("[id^='j']").forEach(b=>{
+b.disabled=true;
+b.classList.add("disabled");
+});
+}
+
 };
 
 </script>
 
 </body>
+
 </html>
