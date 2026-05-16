@@ -44,14 +44,18 @@
 
 <hr>
 
-<h2>📤 Subir comprobante</h2>
+<h2>📤 Comprobante</h2>
 
-<input type="file" id="comprobante" accept="image/*"><br><br>
+<p style="line-height:1.6;">
+💚 Gracias por colaborar con nosotros.  
+Por favor envíanos tu comprobante por WhatsApp.  
+En el botón de “Siguiente” serás redirigido automáticamente al número correspondiente.
+</p>
 
-<hr>
+<br>
 
-<button id="sendBtn" class="button" disabled>
-Enviar a WhatsApp
+<button type="button" id="sendBtn" class="button">
+Siguiente → WhatsApp
 </button>
 
 </form>
@@ -59,6 +63,7 @@ Enviar a WhatsApp
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
@@ -86,7 +91,7 @@ const montoInput = document.getElementById("m");
 
 let montoNum = Number(montoURL);
 
-// DETALLE
+// DETALLE DE PAQUETES
 if (!montoURL || montoNum === 0 || isNaN(montoNum)) {
 
   detalle.innerText = "💚 Gracias por tu aporte libre, cualquier monto nos ayuda a crecer.";
@@ -122,18 +127,8 @@ window.descargarQR = function(){
   a.click();
 };
 
-// habilitar botón solo con comprobante
-const fileInput = document.getElementById("comprobante");
-const sendBtn = document.getElementById("sendBtn");
-
-fileInput.addEventListener("change", ()=>{
-  if(fileInput.files.length > 0){
-    sendBtn.disabled = false;
-  }
-});
-
-// CLICK EN ENVIAR → muestra pantalla de confirmación
-sendBtn.addEventListener("click", async (e)=>{
+// BOTÓN WHATSAPP
+document.getElementById("sendBtn").addEventListener("click", async (e)=>{
 e.preventDefault();
 
 let nombre = document.getElementById("n").value;
@@ -146,64 +141,24 @@ if(!montoFinal || montoFinal <= 0){
   return;
 }
 
-// Firebase
+// sumar total en Firebase
 let snap = await get(totalRef);
 let total = snap.val() || 0;
-
 await set(totalRef, total + montoFinal);
 
-// OVERLAY
-const overlay = document.createElement("div");
-overlay.style.position = "fixed";
-overlay.style.top = "0";
-overlay.style.left = "0";
-overlay.style.width = "100%";
-overlay.style.height = "100%";
-overlay.style.background = "rgba(0,0,0,0.85)";
-overlay.style.color = "white";
-overlay.style.display = "flex";
-overlay.style.alignItems = "center";
-overlay.style.justifyContent = "center";
-overlay.style.textAlign = "center";
-overlay.style.padding = "20px";
-overlay.style.zIndex = "9999";
-
-overlay.innerHTML = `
-<div>
-<h2>💚 Gracias por decidir ser parte de nuestros co-fundadores</h2>
-
-<p style="max-width:600px; line-height:1.6;">
-Como último regalo en agradecimiento de parte de la familia de LA CRUCEÑA DISTRIBUIDORES te ofrecemos un descuento con entrega a domicilio del 10% en todos tus pedidos durante 6 meses a partir del lanzamiento de la fábrica y producción.
-</p>
-
-<br>
-
-<button id="aceptoBtn" style="
-padding:12px 20px;
-background:#28a745;
-color:white;
-border:none;
-border-radius:8px;
-font-size:16px;
-cursor:pointer;">
-✔ Acepto y continuar a WhatsApp
-</button>
-</div>
-`;
-
-document.body.appendChild(overlay);
-
-// BOTÓN MANUAL
-document.getElementById("aceptoBtn").onclick = function(){
-
+// mensaje WhatsApp
 let msg =
-`Aporte:%0ANombre: ${nombre}%0AMonto: ${montoFinal} Bs%0ADirección: ${direccion}`;
+`💚 Aporte recibido
+Nombre: ${nombre}
+Monto: ${montoFinal} Bs
+Dirección: ${direccion}
+📌 Envía tu comprobante por este chat`;
 
 window.location.href =
 "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
 
-};
 });
+
 </script>
 
 </body>
