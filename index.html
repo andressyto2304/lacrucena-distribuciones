@@ -3,9 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LA CRUCEÑA DISTRIBUCIONES</title>
-
 <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -13,77 +11,26 @@
 
 <div class="container">
 
+<img src="logo.png" width="120">
+
 <h1>🥤 LA CRUCEÑA DISTRIBUCIONES</h1>
 
 <p>
-Bienvenido, nosotros somos LA CRUCEÑA DISTRIBUCIONES y estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas en Santa Cruz de la Sierra con buena calidad y precios accesibles para toda nuestra gente.
+Bienvenido, somos LA CRUCEÑA DISTRIBUCIONES. Estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas en Santa Cruz de la Sierra con buena calidad y precios accesibles para toda nuestra gente.
 
-Tu aporte por pequeño o grande que sea nos acerca cada vez más a cumplir este sueño. Únete como co-fundador.
+Tu aporte nos ayuda a cumplir este sueño.
 </p>
 
 <hr>
 
-<h2>📌 ¿Cómo funciona tu visita?</h2>
+<h2>📌 Paso 1</h2>
+<p>Ayúdanos a elegir nuestras etiquetas de productos</p>
 
-<div class="steps">
-
-<p>1️⃣ Ayúdanos a elegir nuestras etiquetas de productos</p>
-<p>2️⃣ Escoge tu paquete promocional</p>
-<p>3️⃣ Finaliza enviando tu aporte por WhatsApp</p>
-
-</div>
-
-<hr>
-
-<h2>🎯 Progreso del proyecto</h2>
-
-<progress id="barra" value="0" max="105000"></progress>
-<p id="porcentaje">0%</p>
-
-<br>
-
-<!-- BOTÓN 1 -->
 <button class="button" onclick="location.href='etiquetas.html'">
-🏷️ Ayúdanos a elegir etiquetas
-</button>
-
-<!-- BOTÓN 2 -->
-<button class="button" onclick="location.href='paquetes.html'">
-📦 Escoge tu paquete promocional
+🏷️ Ir a votación de etiquetas
 </button>
 
 </div>
-
-<!-- FIREBASE (igual que ya lo tienes) -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
-  authDomain: "lacrucena-db.firebaseapp.com",
-  databaseURL: "https://lacrucena-db-default-rtdb.firebaseio.com",
-  projectId: "lacrucena-db",
-  storageBucket: "lacrucena-db.firebasestorage.app",
-  messagingSenderId: "808407017494",
-  appId: "1:808407017494:web:3202e7a9ee67e8d625ed37"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const totalRef = ref(db, "total");
-
-onValue(totalRef, (snap) => {
-    let total = snap.val() || 0;
-
-    document.getElementById("barra").value = total;
-
-    let porcentaje = (total / 105000) * 100;
-    document.getElementById("porcentaje").innerText =
-        porcentaje.toFixed(2) + "% completado";
-});
-</script>
 
 </body>
 </html>
