@@ -107,14 +107,9 @@ progress {
 <h1>🙌 Bienvenido</h1>
 
 <p>
-Bienvenido, nosotros somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong> y estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas aquí en nuestra ciudad Santa Cruz de la Sierra con buena calidad y precios accesibles para toda nuestra gente.
-
-Tu aporte por pequeño o grande que sea nos acerca cada vez más para cumplir este sueño. Únete a nosotros como co-fundador apoyando este proyecto que nace desde nuestra propia tierra.
-
-Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo tiempo ir creciendo poco a poco con el apoyo de las personas que creen en este sueño.
+Bienvenido, nosotros somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong> y estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas aquí en Santa Cruz de la Sierra.
 </p>
 
-<!-- PASOS -->
 <div class="live">
 <h3>📌 Pasos para participar</h3>
 <p>1️⃣ Vota por etiquetas del producto</p>
@@ -123,33 +118,28 @@ Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo t
 <p>4️⃣ Envía tu aporte por WhatsApp</p>
 </div>
 
-<!-- PROGRESO -->
 <div class="goal">
 <h3>🎯 Progreso del proyecto</h3>
 <progress id="progressBar" value="0" max="100"></progress>
 <p><span id="progressText">0%</span> completado</p>
 </div>
 
-<!-- ESTADÍSTICAS -->
 <div class="live">
 <p>📊 Donaciones: <span id="contadorDonaciones">0</span></p>
 <p>🔥 Última donación: <span id="ultimaDonacion">--</span></p>
 </div>
 
-<!-- COFUNDADORES -->
 <div class="live">
 <h3>👥 Últimos 15 cofundadores</h3>
 <div id="listaCofundadores">Cargando...</div>
 </div>
 
-<!-- FLUJO -->
 <a href="etiquetas.html" class="button">🗳️ Comenzar votación de etiquetas</a>
 
 <a href="https://wa.me/59175166467" class="button" style="background:#25D366;">
 💬 Contacto WhatsApp
 </a>
 
-<!-- 🔐 ADMIN OCULTO -->
 <div id="adminPanel">
 <h3>🔐 Panel Admin</h3>
 <p>Acceso activado</p>
@@ -158,8 +148,8 @@ Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo t
 
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
@@ -178,9 +168,6 @@ const db = getDatabase(app);
 
 const donacionesRef = ref(db, "donaciones");
 
-const goal = 105000;
-
-/* 🔐 ADMIN OCULTO ACTIVACIÓN */
 const url = new URLSearchParams(window.location.search);
 if(url.get("admin")==="CRUCENA2026"){
 document.getElementById("adminPanel").style.display="block";
@@ -196,16 +183,16 @@ onValue(donacionesRef, (snapshot) => {
 
   if (data) {
 
-    const keys = Object.keys(data);
-    count = keys.length;
+    const values = Object.values(data);
 
-    keys.forEach(k => {
-      const d = data[k];
-      list.push(d);
-    });
+    count = values.length;
 
-    const lastKey = keys[keys.length - 1];
-    last = data[lastKey].nombre + " - " + data[lastKey].monto + " Bs";
+    list = values.slice();
+
+    if (values.length > 0) {
+      const lastDonation = values[values.length - 1];
+      last = `${lastDonation?.nombre || "Anónimo"} - ${lastDonation?.monto || 0} Bs`;
+    }
   }
 
   document.getElementById("contadorDonaciones").innerText = count;
@@ -220,7 +207,7 @@ onValue(donacionesRef, (snapshot) => {
   list.forEach(d => {
     const div = document.createElement("div");
     div.className = "cofundador";
-    div.innerHTML = `💚 <b>${d.nombre}</b> - ${d.monto} Bs`;
+    div.innerHTML = `💚 <b>${d.nombre || "Anónimo"}</b> - ${d.monto || 0} Bs`;
     cont.appendChild(div);
   });
 
