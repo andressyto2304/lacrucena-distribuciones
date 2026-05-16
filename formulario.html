@@ -121,7 +121,7 @@ function generarCodigo(monto, nombre, ap1, ap2){
   return `CP-${monto}-${iniciales.toUpperCase()}${numero}`;
 }
 
-// BOTÓN PRINCIPAL
+// BOTÓN
 document.getElementById("sendBtn").addEventListener("click", async (e)=>{
 e.preventDefault();
 
@@ -137,12 +137,12 @@ if(!montoFinal || montoFinal <= 0){
   return;
 }
 
-// guardar total
+// Firebase total
 let snap = await get(totalRef);
 let total = snap.val() || 0;
 await set(totalRef, total + montoFinal);
 
-// código cofundador
+// código CP
 let codigo = generarCodigo(montoFinal, nombre, ap1, ap2);
 
 // mensaje WhatsApp
@@ -154,7 +154,7 @@ Código co-fundador: ${codigo}
 Dirección: ${direccion}
 📌 Envía tu comprobante por este chat`;
 
-// OVERLAY PRO
+// OVERLAY (MENSAJE ORIGINAL RESTAURADO)
 const overlay = document.createElement("div");
 overlay.style.position = "fixed";
 overlay.style.top = "0";
@@ -172,10 +172,22 @@ overlay.style.zIndex = "9999";
 
 overlay.innerHTML = `
 <div>
-<h2>💚 Gracias por ser parte de nuestros co-fundadores</h2>
 
-<p style="max-width:600px; line-height:1.6;">
-Como agradecimiento recibirás un 10% de descuento durante 6 meses desde el inicio de producción.
+<h2>💚 Gracias por decidir ser parte de nuestros co-fundadores</h2>
+
+<p style="max-width:650px; line-height:1.6;">
+Como último regalo en agradecimiento de parte de la familia de LA CRUCEÑA DISTRIBUIDORES te ofrecemos un descuento con entrega a domicilio del 10% en todos tus pedidos que realices durante 6 meses a partir del lanzamiento de la fábrica y producción.
+</p>
+
+<br>
+
+<h1 style="color:#00ff88; font-size:32px; letter-spacing:2px;">
+${codigo}
+</h1>
+
+<p style="margin-top:10px; font-weight:bold; color:#ffcc00;">
+⚠ Este código es único y valida tu promoción  
+No lo pierdas, sin él no podrás activar tus beneficios
 </p>
 
 <br>
@@ -190,12 +202,13 @@ font-size:16px;
 cursor:pointer;">
 ✔ Acepto y continuar
 </button>
+
 </div>
 `;
 
 document.body.appendChild(overlay);
 
-// REDIRIGE SOLO AQUÍ
+// REDIRIGIR SOLO AQUÍ
 document.getElementById("aceptoBtn").onclick = function(){
   window.location.href =
   "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
