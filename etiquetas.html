@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Votación de Etiquetas</title>
+<title>Votación Etiquetas</title>
 
 <style>
 body{
@@ -15,7 +15,7 @@ padding:20px;
 }
 
 .card{
-max-width:700px;
+max-width:750px;
 margin:auto;
 background:#111;
 padding:20px;
@@ -24,7 +24,7 @@ border-radius:15px;
 
 .section{
 margin-top:20px;
-padding:10px;
+padding:15px;
 border:1px solid #333;
 border-radius:10px;
 }
@@ -54,12 +54,25 @@ width:100%;
 border-radius:10px;
 }
 
-p{
-text-align:center;
+.bar{
+width:100%;
+height:15px;
+background:#222;
+border-radius:10px;
+overflow:hidden;
+margin-top:5px;
 }
 
-h2{
+.fill{
+height:100%;
+background:#00cc44;
+width:0%;
+}
+
+small{
+display:block;
 text-align:center;
+margin-top:5px;
 }
 </style>
 
@@ -73,50 +86,53 @@ text-align:center;
 
 <!-- GASEOSAS -->
 <div class="section">
-
-<h2>🥤 Etiquetas de Gaseosas</h2>
+<h2>🥤 Gaseosas</h2>
 
 <div class="package">
-<img src="gaseosa 1.png" onerror="this.src='https://via.placeholder.com/300x200?text=Gaseosa+1'">
-<button onclick="vote('g1')">Votar Gaseosa 1</button>
-<p>Votos: <span id="g1">0</span></p>
+<img src="gaseosa1.png">
+<button onclick="vote('g1','gaseosa')">Votar</button>
+<div class="bar"><div id="bar_g1" class="fill"></div></div>
+<small id="p_g1">0%</small>
 </div>
 
 <div class="package">
-<img src="gaseosa 2.jpg" onerror="this.src='https://via.placeholder.com/300x200?text=Gaseosa+2'">
-<button onclick="vote('g2')">Votar Gaseosa 2</button>
-<p>Votos: <span id="g2">0</span></p>
+<img src="gaseosa2.png">
+<button onclick="vote('g2','gaseosa')">Votar</button>
+<div class="bar"><div id="bar_g2" class="fill"></div></div>
+<small id="p_g2">0%</small>
 </div>
 
 <div class="package">
-<img src="gaseosa 3.png" onerror="this.src='https://via.placeholder.com/300x200?text=Gaseosa+3'">
-<button onclick="vote('g3')">Votar Gaseosa 3</button>
-<p>Votos: <span id="g3">0</span></p>
+<img src="gaseosa3.png">
+<button onclick="vote('g3','gaseosa')">Votar</button>
+<div class="bar"><div id="bar_g3" class="fill"></div></div>
+<small id="p_g3">0%</small>
 </div>
-
 </div>
 
 <!-- JUGOS -->
 <div class="section">
-
-<h2>🧃 Etiquetas de Jugos</h2>
+<h2>🧃 Jugos</h2>
 
 <div class="package">
-<img src="jugo 1.png" onerror="this.src='https://via.placeholder.com/300x200?text=Jugo+1'">
-<button onclick="vote('jugo1')">Votar Jugo 1</button>
-<p>Votos: <span id="jugo1">0</span></p>
+<img src="jugo1.png">
+<button onclick="vote('j1','jugo')">Votar</button>
+<div class="bar"><div id="bar_j1" class="fill"></div></div>
+<small id="p_j1">0%</small>
 </div>
 
 <div class="package">
-<img src="jugo 2.png" onerror="this.src='https://via.placeholder.com/300x200?text=Jugo+2'">
-<button onclick="vote('jugo2')">Votar Jugo 2</button>
-<p>Votos: <span id="jugo2">0</span></p>
+<img src="jugo2.png">
+<button onclick="vote('j2','jugo')">Votar</button>
+<div class="bar"><div id="bar_j2" class="fill"></div></div>
+<small id="p_j2">0%</small>
 </div>
 
 <div class="package">
-<img src="jugo 3.png" onerror="this.src='https://via.placeholder.com/300x200?text=Jugo+3'">
-<button onclick="vote('jugo3')">Votar Jugo 3</button>
-<p>Votos: <span id="jugo3">0</span></p>
+<img src="jugo3.png">
+<button onclick="vote('j3','jugo')">Votar</button>
+<div class="bar"><div id="bar_j3" class="fill"></div></div>
+<small id="p_j3">0%</small>
 </div>
 
 </div>
@@ -140,53 +156,72 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const votosRef = ref(db, "votos");
+const refVotos = ref(db, "votos");
 
-// estado local
 let votos = {
-  g1: 0, g2: 0, g3: 0,
-  jugo1: 0, jugo2: 0, jugo3: 0
+  g1:0,g2:0,g3:0,
+  j1:0,j2:0,j3:0
 };
 
-// anti spam básico
-let voted = {};
+// bloqueo por categoría
+let userVote = JSON.parse(localStorage.getItem("userVote") || "{}");
 
-// leer votos en vivo
-onValue(votosRef, (snap) => {
+onValue(refVotos,(snap)=>{
 
-  const data = snap.val();
+const data = snap.val();
+if(data){
+votos = data;
 
-  if (data) {
-
-    Object.keys(votos).forEach(k => {
-      votos[k] = data[k] || 0;
-
-      const el = document.getElementById(k);
-      if (el) el.innerText = votos[k];
-    });
-
-  }
+updateUI();
+}
 
 });
 
-// votar
-window.vote = async function(option) {
+window.vote = async function(id, cat){
 
-  if (voted[option]) {
-    alert("Ya votaste esta opción");
-    return;
-  }
+if(userVote[cat]){
+alert("Ya votaste en esta categoría");
+return;
+}
 
-  voted[option] = true;
+userVote[cat] = id;
+localStorage.setItem("userVote", JSON.stringify(userVote));
 
-  votos[option] = (votos[option] || 0) + 1;
+votos[id] = (votos[id]||0)+1;
 
-  const el = document.getElementById(option);
-  if (el) el.innerText = votos[option];
+await set(refVotos, votos);
 
-  await set(votosRef, votos);
+updateUI();
+}
 
-};
+function updateUI(){
+
+// GASEOSAS
+updateGroup(["g1","g2","g3"]);
+
+// JUGOS
+updateGroup(["j1","j2","j3"]);
+
+}
+
+function updateGroup(arr){
+
+let total = 0;
+
+arr.forEach(i=>{
+total += (votos[i]||0);
+});
+
+arr.forEach(i=>{
+
+let p = total>0 ? (votos[i]/total)*100 : 0;
+
+document.getElementById("p_"+i).innerText = p.toFixed(1)+"%";
+document.getElementById("bar_"+i).style.width = p+"%";
+
+});
+
+}
 
 </script>
 
