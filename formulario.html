@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formulario de Aporte</title>
 
-<!-- 🔗 ESTILO GLOBAL -->
+<title>Formulario - LA CRUCEÑA DISTRIBUCIONES</title>
+
 <link rel="stylesheet" href="styles.css">
 
 </head>
@@ -30,10 +31,10 @@
 <label>Monto</label>
 <input type="number" id="monto" required>
 
-<h3 class="center">📲 Escanea el QR</h3>
+<h3 class="center">📲 Escanea el QR de pago</h3>
 
 <div class="center">
-<img src="qr.png" style="width:200px;border-radius:15px;border:2px solid #00cc44;">
+<img src="qr.png" style="width:220px;border-radius:15px;border:2px solid #00cc44;">
 </div>
 
 <label>📸 Subir comprobante</label>
@@ -48,40 +49,61 @@
 </div>
 
 <script>
+
 const params = new URLSearchParams(window.location.search);
-const monto = params.get('monto');
-const paquete = params.get('paquete');
 
-if(monto){
-    document.getElementById('monto').value = monto;
+const paquete = params.get("paquete");
+const montoURL = params.get("monto");
 
-    if(monto !== "0"){
-        document.getElementById('monto').readOnly = true;
+const montoInput = document.getElementById("monto");
+
+// ===============================
+// CONFIGURAR MONTO AUTOMÁTICO
+// ===============================
+if (montoURL !== null) {
+    montoInput.value = montoURL;
+
+    // si NO es donación libre, bloquear edición
+    if (montoURL !== "0") {
+        montoInput.readOnly = true;
     }
 }
 
-document.getElementById('donationForm').addEventListener('submit', function(e){
+// ===============================
+// ENVIAR FORMULARIO
+// ===============================
+document.getElementById("donationForm").addEventListener("submit", function(e){
     e.preventDefault();
 
-    const nombre = document.getElementById('nombre').value;
-    const whatsapp = document.getElementById('whatsapp').value;
-    const direccion = document.getElementById('direccion').value;
-    const montoFinal = document.getElementById('monto').value;
+    const nombre = document.getElementById("nombre").value;
+    const whatsapp = document.getElementById("whatsapp").value;
+    const direccion = document.getElementById("direccion").value;
+    const montoFinal = montoInput.value;
 
     const mensaje =
 `🙌 NUEVA DONACIÓN
-📦 Paquete: ${paquete || "Libre"}
+📦 Paquete: ${paquete || "Donación Libre"}
 👤 Nombre: ${nombre}
 📱 WhatsApp: ${whatsapp}
 🏠 Dirección: ${direccion}
 💰 Monto: ${montoFinal} Bs`;
 
-    window.open(`https://wa.me/59175166467?text=${encodeURIComponent(mensaje)}`, '_blank');
+    const url = `https://wa.me/59175166467?text=${encodeURIComponent(mensaje)}`;
 
-    setTimeout(()=>{
+    // ===============================
+    // PASO 1: abrir WhatsApp seguro
+    // ===============================
+    window.location.href = url;
+
+    // ===============================
+    // PASO 2: luego ir a gracias
+    // ===============================
+    setTimeout(() => {
         window.location.href = "gracias.html";
-    }, 1000);
+    }, 1500);
+
 });
+
 </script>
 
 </body>
