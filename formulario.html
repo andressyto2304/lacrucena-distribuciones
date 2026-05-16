@@ -3,9 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formulario</title>
-
 <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -13,21 +11,14 @@
 
 <div class="container">
 
-<h1>📋 Aporte</h1>
+<h1>📋 Datos de aporte</h1>
 
 <form id="donationForm">
 
-<label>Nombre</label>
-<input type="text" id="nombre" required>
-
-<label>WhatsApp</label>
-<input type="text" id="whatsapp" required>
-
-<label>Dirección</label>
-<textarea id="direccion" required></textarea>
-
-<label>Monto</label>
-<input type="number" id="monto" required>
+<input type="text" id="nombre" placeholder="Nombre" required>
+<input type="text" id="whatsapp" placeholder="WhatsApp" required>
+<textarea id="direccion" placeholder="Dirección" required></textarea>
+<input type="number" id="monto" placeholder="Monto" required>
 
 <button class="button" type="submit">Enviar</button>
 
