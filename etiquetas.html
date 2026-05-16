@@ -44,16 +44,13 @@ cursor:pointer;
 img{
 width:100%;
 border-radius:10px;
+display:block;
 }
 
-textarea{
-width:100%;
-padding:10px;
-margin-top:10px;
-border-radius:8px;
-background:#000;
-color:#fff;
-border:1px solid #333;
+.next-btn{
+background:#007bff;
+margin-top:25px;
+font-size:18px;
 }
 </style>
 
@@ -63,25 +60,26 @@ border:1px solid #333;
 
 <div class="card">
 
-<h1>🗳️ Votación de Etiquetas</h1>
-
-<!-- REGLAS -->
-<div class="section">
-<h3>📌 Reglas de votación</h3>
-<p>
-✔ Puedes votar 1 vez en <b>Gaseosas</b><br>
-✔ Puedes votar 1 vez en <b>Jugos</b><br>
-✔ Votos duplicados serán bloqueados automáticamente
-</p>
-</div>
+<h1 style="text-align:center;">🗳️ Votación de Etiquetas</h1>
 
 <!-- GASEOSAS -->
 <div class="section">
 <h2>🥤 Gaseosas</h2>
 
-<button onclick="vote('g1')">Gaseosa 1</button>
-<button onclick="vote('g2')">Gaseosa 2</button>
-<button onclick="vote('g3')">Gaseosa 3</button>
+<div>
+<img src="gaseosa%201.png" onerror="this.src='gaseosa1.png'">
+<button onclick="vote('g1')">Votar Gaseosa 1</button>
+</div>
+
+<div>
+<img src="gaseosa%202.jpg" onerror="this.src='gaseosa2.jpg'">
+<button onclick="vote('g2')">Votar Gaseosa 2</button>
+</div>
+
+<div>
+<img src="gaseosa%203.png" onerror="this.src='gaseosa3.png'">
+<button onclick="vote('g3')">Votar Gaseosa 3</button>
+</div>
 
 </div>
 
@@ -89,27 +87,34 @@ border:1px solid #333;
 <div class="section">
 <h2>🧃 Jugos</h2>
 
-<button onclick="vote('j1')">Jugo 1</button>
-<button onclick="vote('j2')">Jugo 2</button>
-<button onclick="vote('j3')">Jugo 3</button>
+<div>
+<img src="jugo%201.png" onerror="this.src='jugo1.png'">
+<button onclick="vote('jugo1')">Votar Jugo 1</button>
+</div>
+
+<div>
+<img src="jugo%202.png" onerror="this.src='jugo2.png'">
+<button onclick="vote('jugo2')">Votar Jugo 2</button>
+</div>
+
+<div>
+<img src="jugo%203.png" onerror="this.src='jugo3.png'">
+<button onclick="vote('jugo3')">Votar Jugo 3</button>
+</div>
 
 </div>
 
-<!-- COMENTARIOS -->
-<div class="section">
-<h2>💬 Comentarios de votantes</h2>
-
-<textarea id="comment" placeholder="Escribe tu opinión o sugerencia..."></textarea>
-<button onclick="sendComment()">Enviar comentario</button>
-
-</div>
+<!-- BOTÓN SIGUIENTE -->
+<button class="next-btn" onclick="goNext()">
+➡ Siguiente: Paquetes Promocionales
+</button>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
@@ -124,66 +129,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const usersRef = ref(db,"usuarios");
-const votesRef = ref(db,"votos");
-const commentsRef = ref(db,"comentarios");
+const votosRef = ref(db,"votos");
 
-// ID único
-function getUserId(){
-let id = localStorage.getItem("uid");
-if(!id){
-id = "U_" + Math.random().toString(36).substring(2,12);
-localStorage.setItem("uid",id);
-}
-return id;
-}
+// votar
+window.vote = async function(id){
 
-const uid = getUserId();
+const snap = await get(votosRef);
+let votos = snap.val() || {};
 
-// ================= VOTAR =================
-window.vote = async function(option){
+votos[id] = (votos[id]||0)+1;
 
-const snap = await get(ref(db,"usuarios/"+uid));
-
-if(snap.exists() && snap.val().voted){
-alert("Ya votaste");
-return;
-}
-
-await set(ref(db,"usuarios/"+uid),{
-voted:true,
-vote:option,
-date:Date.now()
-});
-
-const voteSnap = await get(votesRef);
-let votes = voteSnap.val() || {};
-
-votes[option] = (votes[option]||0)+1;
-
-await set(votesRef,votes);
+await set(votosRef,votos);
 
 alert("Voto registrado");
 };
 
-// ================= COMENTARIOS =================
-window.sendComment = async function(){
-
-const text = document.getElementById("comment").value;
-
-if(!text){
-alert("Escribe un comentario");
-return;
-}
-
-await push(commentsRef,{
-user:uid,
-text:text,
-date:Date.now()
-});
-
-document.getElementById("comment").value = "";
-alert("Comentario enviado");
+// siguiente pagina
+window.goNext = function(){
+window.location.href = "paquetes.html";
 };
 
 </script>
