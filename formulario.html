@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Finalizar aporte</title>
+<title>LA CRUCEÑA DISTRIBUCIONES - Formulario</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -12,35 +12,37 @@
 
 <div class="container">
 
-<img src="logo.png" width="180">
+<img src="logo.png" width="220" style="opacity:0.9;">
 
 <h1>📲 Finalizar aporte</h1>
 
-<h2>📦 Detalle de tu aporte</h2>
+<h2>📦 Detalle de tu selección</h2>
 <p id="detalle">Cargando...</p>
 
 <hr>
 
-<h2>🧾 Tus datos</h2>
+<h2>🧾 Datos del aportante</h2>
 
 <form id="formulario">
 
-<input id="n" placeholder="Nombre" required><br><br>
+<input id="n" placeholder="Nombre completo" required><br><br>
 <input id="w" placeholder="WhatsApp" required><br><br>
-<textarea id="d" placeholder="Dirección" required></textarea><br><br>
+<textarea id="d" placeholder="Dirección de entrega" required></textarea><br><br>
 
-<input id="m" type="number" required><br><br>
+<input id="m" type="number" placeholder="Monto" required><br><br>
 
 <hr>
 
 <h2>💳 QR de pago</h2>
-<img src="qr.png" width="200"><br><br>
+<img src="qr.png" width="220"><br><br>
 
-<button type="button" onclick="descargarQR()">⬇ Descargar QR</button>
+<button type="button" onclick="descargarQR()">
+⬇ Descargar QR
+</button>
 
 <hr>
 
-<h2>📤 Subir comprobante</h2>
+<h2>📤 Subir comprobante de pago</h2>
 <input type="file" id="comprobante" accept="image/*"><br><br>
 
 <hr>
@@ -54,6 +56,7 @@ Enviar a WhatsApp
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
@@ -72,6 +75,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const storage = getStorage(app);
 
+// refs
 const totalRef = ref(db, "total");
 const fundadoresRef = ref(db, "fundadores");
 
@@ -83,7 +87,7 @@ window.descargarQR = function(){
   a.click();
 };
 
-// ---------------- DETALLE ----------------
+// ---------------- DETALLE DE PAQUETES ----------------
 const params = new URLSearchParams(window.location.search);
 let montoURL = params.get("monto");
 
@@ -92,43 +96,50 @@ const montoInput = document.getElementById("m");
 
 let montoNum = Number(montoURL);
 
-if (!montoURL || montoNum === 0 || isNaN(montoNum)) {
-  detalle.innerText = "💚 Gracias por tu aporte libre.";
-  montoInput.placeholder = "Escribe tu aporte";
-} else {
-  montoInput.value = montoNum;
+if (!montoURL || isNaN(montoNum) || montoNum === 0) {
+  detalle.innerText = "💚 Gracias por tu aporte libre. Puedes ingresar cualquier monto.";
+  montoInput.placeholder = "Escribe tu monto libre";
+} else if (montoNum === 150) {
+  detalle.innerText = "📦 Paquete Nº 1: 2 gaseosas de degustación. Entrega en domicilio o empresa.";
+  montoInput.value = 150;
+} else if (montoNum === 300) {
+  detalle.innerText = "📦 Paquete Nº 2: 2 gaseosas + 1 jugo 3L. Entrega en domicilio o empresa.";
+  montoInput.value = 300;
+} else if (montoNum === 500) {
+  detalle.innerText = "📦 Paquete Nº 3: 2 gaseosas + 2 jugos + gorra co-fundador.";
+  montoInput.value = 500;
+} else if (montoNum === 1000) {
+  detalle.innerText = "📦 Paquete Nº 4: 3 gaseosas + 3 jugos + gorra + polera co-fundador.";
+  montoInput.value = 1000;
 }
 
-// ---------------- BOTÓN (IMPORTANTE) ----------------
-window.addEventListener("DOMContentLoaded", () => {
-
+// ---------------- ELEMENTOS ----------------
 const fileInput = document.getElementById("comprobante");
 const sendBtn = document.getElementById("sendBtn");
 
+// habilitar botón
 fileInput.addEventListener("change", ()=>{
   sendBtn.disabled = fileInput.files.length === 0;
 });
 
-// CLICK SEGURO
-sendBtn.addEventListener("click", async (e)=> {
-
-e.preventDefault();
+// ---------------- CLICK BOTÓN (ESTABLE) ----------------
+sendBtn.onclick = async function () {
 
 let nombre = document.getElementById("n").value || "No registrado";
 let whatsapp = document.getElementById("w").value || "";
 let direccion = document.getElementById("d").value || "";
 let montoFinal = parseInt(document.getElementById("m").value);
 
-if(!montoFinal || montoFinal <= 0){
+if (!montoFinal || montoFinal <= 0) {
   alert("Ingresa un monto válido");
   return;
 }
 
-// subir imagen
+// subir comprobante
 let file = fileInput.files[0];
 let url = "";
 
-if(file){
+if (file) {
   let fileRef = sRef(storage, "comprobantes/" + Date.now() + "_" + file.name);
   await uploadBytes(fileRef, file);
   url = await getDownloadURL(fileRef);
@@ -144,12 +155,12 @@ await push(fundadoresRef, {
   fecha: Date.now()
 });
 
-// total
+// sumar total
 let snap = await get(totalRef);
 let total = snap.val() || 0;
 await set(totalRef, total + montoFinal);
 
-// whatsapp
+// mensaje whatsapp
 let msg =
 `💚 Aporte recibido
 Nombre: ${nombre}
@@ -160,9 +171,7 @@ Dirección: ${direccion}
 window.location.href =
 "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
 
-});
-
-});
+};
 
 </script>
 
