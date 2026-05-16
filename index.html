@@ -77,17 +77,6 @@ progress {
   font-size: 14px;
 }
 
-.steps {
-  margin-top: 20px;
-  padding: 10px;
-  background: #1a1a1a;
-  border-radius: 10px;
-}
-
-.steps li {
-  margin: 10px 0;
-}
-
 .logo {
   width: 200px;
   display: block;
@@ -106,23 +95,16 @@ progress {
 
 <h1>🙌 Bienvenido</h1>
 
+<!-- 🔥 RESTAURADO COMPLETO -->
 <p>
-Bienvenido, somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong>, emprendimiento en Santa Cruz de la Sierra.
-Estamos reuniendo fondos para una fábrica de jugos y gaseosas de calidad para nuestra gente.
+Bienvenido, nosotros somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong> y estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas aquí en nuestra ciudad Santa Cruz de la Sierra con buena calidad y precios accesibles para toda nuestra gente.
+
+Tu aporte por pequeño o grande que sea nos acerca cada vez más para cumplir este sueño. Únete a nosotros como co-fundador apoyando este proyecto que nace desde nuestra propia tierra.
+
+Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo tiempo ir creciendo poco a poco con el apoyo de las personas que creen en este sueño.
 </p>
 
-<!-- PASOS -->
-<div class="steps">
-<h3>📌 Cómo participar</h3>
-<ul>
-<li>1️⃣ Vota por etiquetas</li>
-<li>2️⃣ Elige tu paquete</li>
-<li>3️⃣ Llena tu formulario</li>
-<li>4️⃣ Envía tu aporte</li>
-</ul>
-</div>
-
-<!-- BARRA -->
+<!-- PROGRESO -->
 <div class="goal">
 <h3>🎯 Progreso del proyecto</h3>
 <progress id="progressBar" value="0" max="100"></progress>
@@ -142,12 +124,12 @@ Estamos reuniendo fondos para una fábrica de jugos y gaseosas de calidad para n
 <div id="listaCofundadores">Cargando...</div>
 </div>
 
-<!-- BOTONES -->
-<a href="etiquetas.html" class="button">🗳️ Elegir etiquetas</a>
-<a href="paquetes.html" class="button">🚀 Ver paquetes</a>
+<!-- SOLO ENLACES (NO PAQUETES AQUÍ) -->
+<a href="etiquetas.html" class="button">🗳️ Votar etiquetas</a>
+<a href="paquetes.html" class="button">🚀 Ver paquetes promocionales</a>
 
 <a href="https://wa.me/59175166467" class="button" style="background:#25D366;">
-💬 WhatsApp contacto
+💬 Contacto WhatsApp
 </a>
 
 </div>
@@ -174,77 +156,65 @@ const donacionesRef = ref(db, "donaciones");
 
 const goal = 105000;
 
-// 🔄 TIEMPO REAL
 onValue(donacionesRef, (snapshot) => {
 
   const data = snapshot.val();
 
   let total = 0;
-  let contador = 0;
-  let ultima = "--";
-
-  let lista = [];
+  let count = 0;
+  let last = "--";
+  let list = [];
 
   if (data) {
 
     const keys = Object.keys(data);
-    contador = keys.length;
+    count = keys.length;
 
     keys.forEach(k => {
       const d = data[k];
       const monto = Number(d.monto) || 0;
 
       total += monto;
-
-      lista.push(d);
+      list.push(d);
     });
 
-    // última donación
-    const last = keys[keys.length - 1];
-    ultima = data[last].nombre + " - " + data[last].monto + " Bs";
+    const lastKey = keys[keys.length - 1];
+    last = data[lastKey].nombre + " - " + data[lastKey].monto + " Bs";
   }
 
-  // UI stats
   document.getElementById("totalDonado").innerText = total;
-  document.getElementById("contadorDonaciones").innerText = contador;
-  document.getElementById("ultimaDonacion").innerText = ultima;
+  document.getElementById("contadorDonaciones").innerText = count;
+  document.getElementById("ultimaDonacion").innerText = last;
 
-  // barra animada
   let target = (total / goal) * 100;
   if (target > 100) target = 100;
 
   animateBar(target);
 
-  // lista cofundadores
-  lista.reverse();
-  lista = lista.slice(0, 15);
+  list.reverse();
+  list = list.slice(0, 15);
 
   const cont = document.getElementById("listaCofundadores");
   cont.innerHTML = "";
 
-  lista.forEach(d => {
-
+  list.forEach(d => {
     const div = document.createElement("div");
     div.className = "cofundador";
-
-    div.innerHTML = `
-      💚 <b>${d.nombre || "Anónimo"}</b> - ${d.monto || 0} Bs
-    `;
-
+    div.innerHTML = `💚 <b>${d.nombre}</b> - ${d.monto} Bs`;
     cont.appendChild(div);
   });
 
 });
 
-// 🔥 barra fluida
+// barra fluida
 function animateBar(target) {
 
-  let bar = document.getElementById("progressBar");
-  let text = document.getElementById("progressText");
+  const bar = document.getElementById("progressBar");
+  const text = document.getElementById("progressText");
 
   let current = bar.value || 0;
 
-  let interval = setInterval(() => {
+  const interval = setInterval(() => {
 
     if (current < target) {
       current += 0.5;
