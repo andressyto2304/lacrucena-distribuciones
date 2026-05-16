@@ -25,11 +25,9 @@ body {
 
 h1, h2, h3 {
   text-align: center;
-  color: #fff;
 }
 
 p {
-  line-height: 1.6;
   text-align: center;
 }
 
@@ -37,14 +35,6 @@ p {
   background: #1a1a1a;
   padding: 15px;
   border-radius: 10px;
-  margin-top: 20px;
-  text-align: center;
-}
-
-progress {
-  width: 100%;
-  height: 25px;
-  transition: all 0.6s ease;
 }
 
 .live {
@@ -53,11 +43,9 @@ progress {
   padding: 15px;
   border-radius: 10px;
   margin-top: 15px;
-  text-align: center;
 }
 
 .cofundador {
-  text-align: left;
   padding: 8px;
   border-bottom: 1px solid #222;
   font-size: 14px;
@@ -72,30 +60,25 @@ progress {
 }
 
 .button {
-  display: inline-block;
+  display: block;
   margin-top: 15px;
   padding: 12px;
   background: #00cc44;
   color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
   text-align: center;
+  border-radius: 10px;
   text-decoration: none;
 }
 
-/* 🔐 ADMIN OCULTO */
-#adminPanel{
-  display:none;
-  margin-top:20px;
-  padding:15px;
-  background:#1a1a1a;
-  border:1px solid #00cc44;
-  border-radius:10px;
+/* DEBUG */
+#debug{
+  font-size:12px;
+  color:#888;
+  text-align:center;
+  margin-top:10px;
 }
 </style>
+
 </head>
 
 <body>
@@ -104,25 +87,7 @@ progress {
 
 <img src="logo.png" class="logo">
 
-<h1>🙌 Bienvenido</h1>
-
-<p>
-Bienvenido, nosotros somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong> y estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas aquí en Santa Cruz de la Sierra.
-</p>
-
-<div class="live">
-<h3>📌 Pasos para participar</h3>
-<p>1️⃣ Vota por etiquetas del producto</p>
-<p>2️⃣ Selecciona tu paquete promocional</p>
-<p>3️⃣ Llena tus datos personales</p>
-<p>4️⃣ Envía tu aporte por WhatsApp</p>
-</div>
-
-<div class="goal">
-<h3>🎯 Progreso del proyecto</h3>
-<progress id="progressBar" value="0" max="100"></progress>
-<p><span id="progressText">0%</span> completado</p>
-</div>
+<h1>LA CRUCEÑA DISTRIBUCIONES</h1>
 
 <div class="live">
 <p>📊 Donaciones: <span id="contadorDonaciones">0</span></p>
@@ -134,17 +99,9 @@ Bienvenido, nosotros somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong> y estamos
 <div id="listaCofundadores">Cargando...</div>
 </div>
 
-<a href="etiquetas.html" class="button">🗳️ Comenzar votación de etiquetas</a>
+<div id="debug"></div>
 
-<a href="https://wa.me/59175166467" class="button" style="background:#25D366;">
-💬 Contacto WhatsApp
-</a>
-
-<div id="adminPanel">
-<h3>🔐 Panel Admin</h3>
-<p>Acceso activado</p>
-<div id="adminData"></div>
-</div>
+<a href="etiquetas.html" class="button">🗳️ Ir a Votación</a>
 
 </div>
 
@@ -168,46 +125,45 @@ const db = getDatabase(app);
 
 const donacionesRef = ref(db, "donaciones");
 
-const url = new URLSearchParams(window.location.search);
-if(url.get("admin")==="CRUCENA2026"){
-document.getElementById("adminPanel").style.display="block";
-}
-
 onValue(donacionesRef, (snapshot) => {
 
   const data = snapshot.val();
 
-  let count = 0;
-  let last = "--";
-  let list = [];
+  document.getElementById("debug").innerText =
+    "RAW DATA: " + JSON.stringify(data);
 
-  if (data) {
-
-    const values = Object.values(data);
-
-    count = values.length;
-
-    list = values.slice();
-
-    if (values.length > 0) {
-      const lastDonation = values[values.length - 1];
-      last = `${lastDonation?.nombre || "Anónimo"} - ${lastDonation?.monto || 0} Bs`;
-    }
+  if (!data) {
+    document.getElementById("contadorDonaciones").innerText = 0;
+    document.getElementById("ultimaDonacion").innerText = "--";
+    document.getElementById("listaCofundadores").innerHTML = "Sin datos aún";
+    return;
   }
 
-  document.getElementById("contadorDonaciones").innerText = count;
-  document.getElementById("ultimaDonacion").innerText = last;
+  // 🔥 convertir a array seguro
+  const list = Object.entries(data).map(([id, val]) => ({
+    id,
+    nombre: val?.nombre || "Anónimo",
+    monto: val?.monto || 0
+  }));
 
-  list.reverse();
-  list = list.slice(0, 15);
+  // contador
+  document.getElementById("contadorDonaciones").innerText = list.length;
+
+  // última donación real
+  const last = list[list.length - 1];
+  document.getElementById("ultimaDonacion").innerText =
+    `${last.nombre} - ${last.monto} Bs`;
+
+  // lista últimos 15
+  const last15 = list.slice(-15).reverse();
 
   const cont = document.getElementById("listaCofundadores");
   cont.innerHTML = "";
 
-  list.forEach(d => {
+  last15.forEach(d => {
     const div = document.createElement("div");
     div.className = "cofundador";
-    div.innerHTML = `💚 <b>${d.nombre || "Anónimo"}</b> - ${d.monto || 0} Bs`;
+    div.innerHTML = `💚 <b>${d.nombre}</b> - ${d.monto} Bs`;
     cont.appendChild(div);
   });
 
