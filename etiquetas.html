@@ -41,15 +41,13 @@ font-weight:bold;
 cursor:pointer;
 }
 
-.disabled{
-background:#444 !important;
-cursor:not-allowed;
-}
-
-.voteBox{
-margin-top:5px;
-font-size:14px;
-color:#ccc;
+/* ✔ IMAGENES UNIFORMES */
+img{
+width:100%;
+height:220px;
+object-fit:cover;
+border-radius:10px;
+margin-top:10px;
 }
 
 .progressBar{
@@ -64,6 +62,12 @@ margin-top:5px;
 height:100%;
 background:#00cc44;
 width:0%;
+}
+
+#nextBtn{
+display:none;
+margin-top:20px;
+background:#007bff;
 }
 </style>
 
@@ -80,19 +84,13 @@ width:0%;
 <h2>🥤 Gaseosas</h2>
 
 <img src="gaseosa 1.png">
-<button id="g1" onclick="vote('gaseosa','g1')">Gaseosa 1</button>
-<div class="voteBox">Votos: <span id="g1v">0</span></div>
-<div class="progressBar"><div class="progress" id="g1p"></div></div>
+<button onclick="vote('gaseosa','g1')">Gaseosa 1</button>
 
 <img src="gaseosa 2.jpg">
-<button id="g2" onclick="vote('gaseosa','g2')">Gaseosa 2</button>
-<div class="voteBox">Votos: <span id="g2v">0</span></div>
-<div class="progressBar"><div class="progress" id="g2p"></div></div>
+<button onclick="vote('gaseosa','g2')">Gaseosa 2</button>
 
 <img src="gaseosa 3.png">
-<button id="g3" onclick="vote('gaseosa','g3')">Gaseosa 3</button>
-<div class="voteBox">Votos: <span id="g3v">0</span></div>
-<div class="progressBar"><div class="progress" id="g3p"></div></div>
+<button onclick="vote('gaseosa','g3')">Gaseosa 3</button>
 
 </div>
 
@@ -101,31 +99,30 @@ width:0%;
 <h2>🧃 Jugos</h2>
 
 <img src="jugo 1.png">
-<button id="j1" onclick="vote('jugo','j1')">Jugo 1</button>
-<div class="voteBox">Votos: <span id="j1v">0</span></div>
-<div class="progressBar"><div class="progress" id="j1p"></div></div>
+<button onclick="vote('jugo','j1')">Jugo 1</button>
 
 <img src="jugo 2.png">
-<button id="j2" onclick="vote('jugo','j2')">Jugo 2</button>
-<div class="voteBox">Votos: <span id="j2v">0</span></div>
-<div class="progressBar"><div class="progress" id="j2p"></div></div>
+<button onclick="vote('jugo','j2')">Jugo 2</button>
 
 <img src="jugo 3.png">
-<button id="j3" onclick="vote('jugo','j3')">Jugo 3</button>
-<div class="voteBox">Votos: <span id="j3v">0</span></div>
-<div class="progressBar"><div class="progress" id="j3p"></div></div>
+<button onclick="vote('jugo','j3')">Jugo 3</button>
 
 </div>
+
+<!-- BOTÓN MANUAL -->
+<button id="nextBtn" onclick="goNext()">
+➡ Ir a Paquetes Promocionales
+</button>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
+  apiKey: "AIzaSyAzKqIZC8Jg4zC8C8C8C8",
   authDomain: "lacrucena-db.firebaseapp.com",
   databaseURL: "https://lacrucena-db-default-rtdb.firebaseio.com",
   projectId: "lacrucena-db",
@@ -139,7 +136,6 @@ const db = getDatabase(app);
 
 const votosRef = ref(db,"votos");
 
-// usuario único
 function getUserId(){
 let id = localStorage.getItem("uid");
 if(!id){
@@ -151,71 +147,68 @@ return id;
 
 const uid = getUserId();
 
-// votos en vivo
-onValue(votosRef,(snap)=>{
-const v = snap.val()||{};
+// estado local
+let votedGaseosa = false;
+let votedJugo = false;
 
-const g1=v.g1||0, g2=v.g2||0, g3=v.g3||0;
-const j1=v.j1||0, j2=v.j2||0, j3=v.j3||0;
-
-const totalG = g1+g2+g3;
-const totalJ = j1+j2+j3;
-
-// texto
-document.getElementById("g1v").innerText=g1;
-document.getElementById("g2v").innerText=g2;
-document.getElementById("g3v").innerText=g3;
-
-document.getElementById("j1v").innerText=j1;
-document.getElementById("j2v").innerText=j2;
-document.getElementById("j3v").innerText=j3;
-
-// barras
-document.getElementById("g1p").style.width= totalG?((g1/totalG)*100)+"%":"0%";
-document.getElementById("g2p").style.width= totalG?((g2/totalG)*100)+"%":"0%";
-document.getElementById("g3p").style.width= totalG?((g3/totalG)*100)+"%":"0%";
-
-document.getElementById("j1p").style.width= totalJ?((j1/totalJ)*100)+"%":"0%";
-document.getElementById("j2p").style.width= totalJ?((j2/totalJ)*100)+"%":"0%";
-document.getElementById("j3p").style.width= totalJ?((j3/totalJ)*100)+"%":"0%";
-
-});
-
-// VOTAR CON BLOQUEO REAL
-window.vote = async function(categoria, opcion){
+// VOTAR
+window.vote = async function(cat,opt){
 
 const userRef = ref(db,"usuarios/"+uid);
 const snap = await get(userRef);
 const data = snap.val()||{};
 
 // bloqueo por categoría
-if(categoria==="gaseosa" && data.gaseosaVotado){
-alert("Ya votaste en gaseosas");
+if(cat==="gaseosa" && data.gaseosaVotado){
+alert("Ya votaste gaseosas");
 return;
 }
 
-if(categoria==="jugo" && data.jugoVotado){
-alert("Ya votaste en jugos");
+if(cat==="jugo" && data.jugoVotado){
+alert("Ya votaste jugos");
 return;
 }
 
 // guardar usuario
-if(categoria==="gaseosa"){
-await set(userRef,{...data,gaseosaVotado:true,gaseosa:opcion});
+if(cat==="gaseosa"){
+await set(userRef,{...data,gaseosaVotado:true,gaseosa:opt});
+votedGaseosa = true;
 }
 
-if(categoria==="jugo"){
-await set(userRef,{...data,jugoVotado:true,jugo:opcion});
+if(cat==="jugo"){
+await set(userRef,{...data,jugoVotado:true,jugo:opt});
+votedJugo = true;
 }
 
-// sumar voto global
+// votos global
 const votosSnap = await get(votosRef);
 let votos = votosSnap.val()||{};
 
-votos[opcion]=(votos[opcion]||0)+1;
+votos[opt]=(votos[opt]||0)+1;
 
 await set(votosRef,votos);
 
+// verificar final
+checkFinish();
+};
+
+function checkFinish(){
+
+if(votedGaseosa && votedJugo){
+
+document.getElementById("nextBtn").style.display="block";
+
+setTimeout(()=>{
+alert("🎉 Gracias por participar");
+window.location.href="paquetes.html";
+},1500);
+
+}
+}
+
+// fallback manual
+window.goNext = function(){
+window.location.href="paquetes.html";
 };
 
 </script>
