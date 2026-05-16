@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<label>Monto</label>
+<input type="number" id="monto" required>
+
+<h3 class="center">📲 Escanea el QR</h3>
+
+<div class="center">
+<img src="qr.png" style="width:220px;border-radius:15px;border:2px solid #00cc44;">
+</div>
+
+<label>📸 Subir comprobante</label>
+<input type="file" required>
+
+<button type="submit" class="button">
+✅ Enviar por WhatsApp
+</button>
+
+</form>
+
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const monto = params.get('monto');
+
+document.getElementById('monto').value = monto;
+
+if(monto !== '0'){
+ document.getElementById('monto').readOnly = true;
+}
+
+document.getElementById('donationForm').addEventListener('submit',function(e){
+ e.preventDefault();
+
+ const paquete = params.get('paquete');
+ const nombre = document.getElementById('nombre').value;
+ const whatsapp = document.getElementById('whatsapp').value;
+ const direccion = document.getElementById('direccion').value;
+ const montoFinal = document.getElementById('monto').value;
+
+ const mensaje = `🙌 NUEVA DONACIÓN %0A%0A📦 Paquete: ${paquete}%0A👤 Nombre: ${nombre}%0A📱 WhatsApp: ${whatsapp}%0A🏠 Dirección: ${direccion}%0A💰 Monto: ${montoFinal} Bs`;
+
+ window.open(`https://wa.me/59175166467?text=${mensaje}`,'_blank');
+
+ setTimeout(()=>{
+  window.location.href='gracias.html';
+ },1000);
+});
+</script>
+
+</body>
+</html>
