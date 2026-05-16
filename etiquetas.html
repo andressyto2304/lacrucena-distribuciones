@@ -3,9 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Votación de Etiquetas</title>
-
+<title>Votación de etiquetas</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -13,33 +11,32 @@
 
 <div class="container">
 
-<h1>🏷️ Ayúdanos a elegir nuestras etiquetas</h1>
+<img src="logo.png" width="100">
 
-<p>
-Gracias por apoyarnos 🙌
-Tu voto ayuda a definir el diseño de nuestros productos.
-</p>
+<h1>🏷️ Votación de etiquetas</h1>
+
+<p>Gracias por ayudarnos a elegir nuestros diseños 🙌</p>
 
 <hr>
 
 <h2>🥤 Gaseosas</h2>
 
 <div>
-<p>Opción 1</p>
-<button class="button" onclick="votar('gaseosa1')">Votar</button>
-<span id="gaseosa1">0</span>
+<img src="gaseosa1.jpg" width="120"><br>
+<button class="button" onclick="votar('g1')">Votar</button>
+<span id="g1">0</span>
 </div>
 
 <div>
-<p>Opción 2</p>
-<button class="button" onclick="votar('gaseosa2')">Votar</button>
-<span id="gaseosa2">0</span>
+<img src="gaseosa2.jpg" width="120"><br>
+<button class="button" onclick="votar('g2')">Votar</button>
+<span id="g2">0</span>
 </div>
 
 <div>
-<p>Opción 3</p>
-<button class="button" onclick="votar('gaseosa3')">Votar</button>
-<span id="gaseosa3">0</span>
+<img src="gaseosa3.jpg" width="120"><br>
+<button class="button" onclick="votar('g3')">Votar</button>
+<span id="g3">0</span>
 </div>
 
 <hr>
@@ -47,32 +44,31 @@ Tu voto ayuda a definir el diseño de nuestros productos.
 <h2>🧃 Jugos</h2>
 
 <div>
-<p>Opción 1</p>
-<button class="button" onclick="votar('jugo1')">Votar</button>
-<span id="jugo1">0</span>
+<img src="jugo1.jpg" width="120"><br>
+<button class="button" onclick="votar('j1')">Votar</button>
+<span id="j1">0</span>
 </div>
 
 <div>
-<p>Opción 2</p>
-<button class="button" onclick="votar('jugo2')">Votar</button>
-<span id="jugo2">0</span>
+<img src="jugo2.jpg" width="120"><br>
+<button class="button" onclick="votar('j2')">Votar</button>
+<span id="j2">0</span>
 </div>
 
 <div>
-<p>Opción 3</p>
-<button class="button" onclick="votar('jugo3')">Votar</button>
-<span id="jugo3">0</span>
+<img src="jugo3.jpg" width="120"><br>
+<button class="button" onclick="votar('j3')">Votar</button>
+<span id="j3">0</span>
 </div>
 
-<br>
+<hr>
 
-<button class="button" onclick="location.href='index.html'">
-⬅ Volver al inicio
+<button class="button" onclick="location.href='paquetes.html'">
+➡ Continuar a paquetes
 </button>
 
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -90,40 +86,26 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const votosRef = ref(db, "votos");
+const votosRef = ref(db,"votos");
 
-// 🔥 inicializar si no existe
-get(votosRef).then((snap) => {
-  if (!snap.exists()) {
-    set(votosRef, {
-      gaseosa1: 0,
-      gaseosa2: 0,
-      gaseosa3: 0,
-      jugo1: 0,
-      jugo2: 0,
-      jugo3: 0
-    });
+get(votosRef).then(s=>{
+  if(!s.exists()){
+    set(votosRef,{g1:0,g2:0,g3:0,j1:0,j2:0,j3:0});
   }
 });
 
-// 📊 escuchar cambios en vivo
-onValue(votosRef, (snap) => {
-  const data = snap.val();
-
-  for (let key in data) {
-    const el = document.getElementById(key);
-    if (el) el.innerText = data[key];
+onValue(votosRef,(snap)=>{
+  const d = snap.val();
+  for(let k in d){
+    document.getElementById(k).innerText = d[k];
   }
 });
 
-// 🟢 función de voto
-window.votar = async function(opcion) {
+window.votar = async function(op){
   const snap = await get(votosRef);
-  let data = snap.val();
-
-  data[opcion] = (data[opcion] || 0) + 1;
-
-  await set(votosRef, data);
+  let d = snap.val();
+  d[op]++;
+  await set(votosRef,d);
 };
 </script>
 
