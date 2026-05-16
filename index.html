@@ -6,43 +6,225 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LA CRUCEÑA DISTRIBUCIONES</title>
 
-<link rel="stylesheet" href="styles.css">
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #000;
+  margin: 0;
+  padding: 20px;
+  color: #fff;
+}
+
+.card {
+  max-width: 650px;
+  margin: auto;
+  background: #111;
+  padding: 30px;
+  border-radius: 15px;
+}
+
+h1, h2, h3 {
+  text-align: center;
+}
+
+p {
+  line-height: 1.6;
+  text-align: center;
+}
+
+.button {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 12px;
+  background: #00cc44;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+}
+
+.goal {
+  background: #1a1a1a;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+progress {
+  width: 100%;
+  height: 25px;
+  transition: all 0.8s ease; /* 🔥 animación suave */
+}
+
+img.logo {
+  width: 180px;
+  display: block;
+  margin: auto;
+  border-radius: 15px;
+  border: 2px solid #00cc44;
+}
+
+/* NUEVO: panel en vivo */
+.live {
+  background: #0d0d0d;
+  border: 1px solid #00cc44;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.steps {
+  margin-top: 20px;
+  padding: 10px;
+  background: #1a1a1a;
+  border-radius: 10px;
+}
+
+.steps li {
+  margin: 10px 0;
+}
+</style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="card">
 
-<!-- LOGO MÁS GRANDE -->
-<img src="logo.png" width="220">
+<img src="logo.png" style="width:200px; display:block; margin:auto; border-radius:15px; border:2px solid #00cc44;">
 
-<h1>🥤 LA CRUCEÑA DISTRIBUCIONES</h1>
+<h1>🙌 Bienvenido</h1>
 
-<!-- PRESENTACIÓN -->
-<p style="max-width:700px; margin: 0 auto; text-align:center; line-height:1.6;">
-bienvenido, somos LA CRUCEÑA DISTRIBUCIONES, este es nuestro emprendimiento aquí en Santa Cruz de la Sierra por gente de aqui de santa cruz. Estamos reuniendo fondos para poder iniciar una pequeña fábrica de jugos y gaseosas con buena calidad y precios accesibles para toda nuestra gente.
-
-Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo tiempo ir creciendo poco a poco con el apoyo de las personas que creen en este sueño.
+<p>
+Bienvenido, somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong>, este es nuestro emprendimiento aquí en Santa Cruz de la Sierra.
+Estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas con buena calidad y precios accesibles.
 </p>
 
-<hr>
+<!-- PASOS -->
+<div class="steps">
+<h3>📌 Cómo participar</h3>
+<ul>
+<li>1️⃣ Ayúdanos a elegir etiquetas</li>
+<li>2️⃣ Escoge tu paquete</li>
+<li>3️⃣ Llena formulario de recompensas</li>
+<li>4️⃣ Envía tu aporte</li>
+</ul>
+</div>
 
-<h2>📌 Cómo funciona tu visita</h2>
+<!-- BARRA -->
+<div class="goal">
+<h3>🎯 Progreso del proyecto</h3>
+<progress id="progressBar" value="0" max="100"></progress>
+<p><span id="progressText">0%</span> completado</p>
+</div>
 
-<!-- PASOS ACTUALIZADOS -->
-<p>1️⃣ Ayúdanos a elegir nuestras etiquetas</p>
-<p>2️⃣ Escoge tu paquete promocional</p>
-<p>3️⃣ Llena tu formulario de recompensas</p>
-<p>4️⃣ Finaliza tu aporte enviando tu comprobante por WhatsApp</p>
+<!-- NUEVO: ESTADÍSTICAS EN VIVO -->
+<div class="live">
+<p>💰 Total recaudado: <span id="totalDonado">0</span> Bs</p>
+<p>📊 Número de donaciones: <span id="contadorDonaciones">0</span></p>
+<p>🔥 Última donación: <span id="ultimaDonacion">--</span></p>
+</div>
 
-<br>
+<!-- BOTONES -->
+<a href="etiquetas.html" class="button">🗳️ Elegir etiquetas</a>
+<a href="paquetes.html" class="button">🚀 Ver paquetes</a>
 
-<!-- BOTÓN -->
-<button class="button" onclick="location.href='etiquetas.html'">
-🏷️ Ayúdanos a elegir etiquetas
-</button>
+<a href="https://wa.me/59175166467" class="button" style="background:#25D366;">
+💬 Contacto WhatsApp
+</a>
 
 </div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
+  authDomain: "lacrucena-db.firebaseapp.com",
+  databaseURL: "https://lacrucena-db-default-rtdb.firebaseio.com",
+  projectId: "lacrucena-db",
+  storageBucket: "lacrucena-db.firebasestorage.app",
+  messagingSenderId: "808407017494",
+  appId: "1:808407017494:web:3202e7a9ee67e8d625ed37"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const donacionesRef = ref(db, "donaciones");
+
+const goal = 105000;
+
+// valores actuales
+let totalActual = 0;
+
+// 🔄 tiempo real
+onValue(donacionesRef, (snapshot) => {
+
+  const data = snapshot.val();
+
+  let total = 0;
+  let contador = 0;
+  let ultima = "Sin datos";
+
+  if (data) {
+
+    const keys = Object.keys(data);
+    contador = keys.length;
+
+    keys.forEach((k) => {
+      const d = data[k];
+      const monto = Number(d.monto) || 0;
+      total += monto;
+    });
+
+    // última donación
+    const lastKey = keys[keys.length - 1];
+    ultima = data[lastKey].monto + " Bs";
+  }
+
+  // contador
+  document.getElementById("contadorDonaciones").innerText = contador;
+  document.getElementById("ultimaDonacion").innerText = ultima;
+  document.getElementById("totalDonado").innerText = total;
+
+  // 🎯 barra suave (animación)
+  let target = (total / goal) * 100;
+  if (target > 100) target = 100;
+
+  animateBar(target);
+});
+
+// 🔥 animación suave de barra
+function animateBar(target) {
+
+  let bar = document.getElementById("progressBar");
+  let text = document.getElementById("progressText");
+
+  let current = bar.value || 0;
+
+  let interval = setInterval(() => {
+
+    if (current < target) {
+      current += 0.5;
+    } else {
+      clearInterval(interval);
+    }
+
+    bar.value = current;
+    text.innerText = current.toFixed(1) + "%";
+
+  }, 20);
+}
+
+</script>
 
 </body>
 </html>
