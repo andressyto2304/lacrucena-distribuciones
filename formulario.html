@@ -77,14 +77,13 @@ const db = getDatabase(app);
 
 const totalRef = ref(db, "total");
 
-// URL monto
+// monto URL
 const params = new URLSearchParams(window.location.search);
 let montoURL = params.get("monto");
 
 const detalle = document.getElementById("detalle");
 const montoInput = document.getElementById("m");
 
-// lógica segura
 let montoNum = Number(montoURL);
 
 // DETALLE
@@ -115,7 +114,7 @@ if (!montoURL || montoNum === 0 || isNaN(montoNum)) {
   montoInput.value = 1000;
 }
 
-// descargar QR
+// QR download
 window.descargarQR = function(){
   const a = document.createElement("a");
   a.href = "qr.png";
@@ -133,7 +132,7 @@ fileInput.addEventListener("change", ()=>{
   }
 });
 
-// ENVIAR CON MENSAJE + ESPERA
+// CLICK EN ENVIAR → muestra pantalla de confirmación
 sendBtn.addEventListener("click", async (e)=>{
 e.preventDefault();
 
@@ -153,7 +152,7 @@ let total = snap.val() || 0;
 
 await set(totalRef, total + montoFinal);
 
-// OVERLAY DE AGRADECIMIENTO
+// OVERLAY
 const overlay = document.createElement("div");
 overlay.style.position = "fixed";
 overlay.style.top = "0";
@@ -171,18 +170,31 @@ overlay.style.zIndex = "9999";
 
 overlay.innerHTML = `
 <div>
-<h2>💚 Gracias por decidir ser parte de nuestro grupo de co-fundadores</h2>
+<h2>💚 Gracias por decidir ser parte de nuestros co-fundadores</h2>
+
 <p style="max-width:600px; line-height:1.6;">
 Como último regalo en agradecimiento de parte de la familia de LA CRUCEÑA DISTRIBUIDORES te ofrecemos un descuento con entrega a domicilio del 10% en todos tus pedidos durante 6 meses a partir del lanzamiento de la fábrica y producción.
 </p>
-<p>⏳ Preparando tu solicitud...</p>
+
+<br>
+
+<button id="aceptoBtn" style="
+padding:12px 20px;
+background:#28a745;
+color:white;
+border:none;
+border-radius:8px;
+font-size:16px;
+cursor:pointer;">
+✔ Acepto y continuar a WhatsApp
+</button>
 </div>
 `;
 
 document.body.appendChild(overlay);
 
-// esperar y enviar a WhatsApp
-setTimeout(()=>{
+// BOTÓN MANUAL
+document.getElementById("aceptoBtn").onclick = function(){
 
 let msg =
 `Aporte:%0ANombre: ${nombre}%0AMonto: ${montoFinal} Bs%0ADirección: ${direccion}`;
@@ -190,8 +202,7 @@ let msg =
 window.location.href =
 "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
 
-}, 6000);
-
+};
 });
 </script>
 
