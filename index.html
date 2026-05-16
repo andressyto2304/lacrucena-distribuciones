@@ -32,21 +32,6 @@ p {
   text-align: center;
 }
 
-.button {
-  display: inline-block;
-  margin-top: 15px;
-  padding: 12px;
-  background: #00cc44;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  text-align: center;
-  text-decoration: none;
-}
-
 .goal {
   background: #1a1a1a;
   padding: 15px;
@@ -84,6 +69,19 @@ progress {
   border-radius: 15px;
   border: 2px solid #00cc44;
 }
+
+.button {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 12px;
+  background: #00cc44;
+  color: white;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+}
 </style>
 </head>
 
@@ -95,13 +93,14 @@ progress {
 
 <h1>🙌 Bienvenido</h1>
 
-<!-- 🔥 RESTAURADO COMPLETO -->
 <p>
-Bienvenido, nosotros somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong> y estamos reuniendo fondos para iniciar una pequeña fábrica de jugos y gaseosas aquí en nuestra ciudad Santa Cruz de la Sierra con buena calidad y precios accesibles para toda nuestra gente.
+Bienvenido, somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong>.
 
-Tu aporte por pequeño o grande que sea nos acerca cada vez más para cumplir este sueño. Únete a nosotros como co-fundador apoyando este proyecto que nace desde nuestra propia tierra.
+Estamos construyendo una fábrica de jugos y gaseosas en Santa Cruz de la Sierra, con el objetivo de ofrecer productos accesibles y de calidad para nuestra gente.
+</p>
 
-Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo tiempo ir creciendo poco a poco con el apoyo de las personas que creen en este sueño.
+<p>
+Este proyecto nace con el apoyo de la comunidad. Tu participación es importante para hacerlo realidad.
 </p>
 
 <!-- PROGRESO -->
@@ -124,9 +123,8 @@ Queremos ofrecer productos frescos, hechos aquí en nuestra ciudad, y al mismo t
 <div id="listaCofundadores">Cargando...</div>
 </div>
 
-<!-- SOLO ENLACES (NO PAQUETES AQUÍ) -->
-<a href="etiquetas.html" class="button">🗳️ Votar etiquetas</a>
-<a href="paquetes.html" class="button">🚀 Ver paquetes promocionales</a>
+<!-- SOLO FLUJO CORRECTO -->
+<a href="etiquetas.html" class="button">🗳️ Comenzar votación de etiquetas</a>
 
 <a href="https://wa.me/59175166467" class="button" style="background:#25D366;">
 💬 Contacto WhatsApp
@@ -206,7 +204,6 @@ onValue(donacionesRef, (snapshot) => {
 
 });
 
-// barra fluida
 function animateBar(target) {
 
   const bar = document.getElementById("progressBar");
