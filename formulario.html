@@ -3,7 +3,9 @@
 
 <head>
 <meta charset="UTF-8">
-<title>Formulario</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finalizar aporte</title>
+
 <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -11,8 +13,26 @@
 
 <div class="container">
 
+<img src="logo.png" width="180">
+
 <h1>📲 Finalizar aporte</h1>
 
+<!-- DETALLE DEL PAQUETE -->
+<h2>📦 Detalle de tu selección</h2>
+<p id="detalle">Cargando paquete...</p>
+
+<hr>
+
+<!-- QR -->
+<h2>💳 Escanea para aportar</h2>
+
+<img src="qr.png" width="200" alt="QR de pago">
+
+<p>Puedes escanear este código o descargarlo para realizar tu aporte.</p>
+
+<hr>
+
+<!-- FORMULARIO -->
 <form id="f">
 
 <input id="n" placeholder="Nombre" required><br><br>
@@ -20,7 +40,7 @@
 <textarea id="d" placeholder="Dirección" required></textarea><br><br>
 <input id="m" placeholder="Monto" type="number" required><br><br>
 
-<button class="button">Enviar</button>
+<button class="button">Enviar a WhatsApp</button>
 
 </form>
 
@@ -43,25 +63,53 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const totalRef = ref(db,"total");
+const totalRef = ref(db, "total");
 
+// 🔥 OBTENER MONTO DESDE URL
+const params = new URLSearchParams(window.location.search);
+let monto = params.get("monto") || 0;
+
+// 🔥 MOSTRAR DETALLE DEL PAQUETE
+const detalle = document.getElementById("detalle");
+
+if (monto == 0) {
+  detalle.innerText = "💚 Donación libre — puedes aportar cualquier monto";
+} else if (monto == 150) {
+  detalle.innerText = "📦 Paquete Nº 1 - 150 Bs";
+} else if (monto == 300) {
+  detalle.innerText = "📦 Paquete Nº 2 - 300 Bs";
+} else if (monto == 500) {
+  detalle.innerText = "📦 Paquete Nº 3 - 500 Bs";
+} else if (monto == 1000) {
+  detalle.innerText = "📦 Paquete Nº 4 - 1000 Bs";
+}
+
+document.getElementById("m").value = monto;
+
+// 🔥 FORMULARIO + WHATSAPP + FIREBASE
 document.getElementById("f").onsubmit = async (e)=>{
 e.preventDefault();
 
-let m = parseInt(document.getElementById("m").value);
+let nombre = document.getElementById("n").value;
+let whatsapp = document.getElementById("w").value;
+let direccion = document.getElementById("d").value;
+let montoFinal = parseInt(document.getElementById("m").value);
 
+// sumar a Firebase
 let snap = await get(totalRef);
-let t = snap.val() || 0;
+let total = snap.val() || 0;
 
-await set(totalRef, t + m);
+await set(totalRef, total + montoFinal);
 
+// mensaje WhatsApp
 let msg =
-`Aporte:
-${document.getElementById("n").value}
-${m} Bs`;
+`Aporte realizado:%0A
+Nombre: ${nombre}%0A
+Monto: ${montoFinal} Bs%0A
+Dirección: ${direccion}`;
 
 window.location.href =
-"https://wa.me/59175166467?text="+encodeURIComponent(msg);
+"https://wa.me/59175166467?text=" + encodeURIComponent(msg);
 };
 </script>
 
