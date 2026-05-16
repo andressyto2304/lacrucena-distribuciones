@@ -3,7 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<title>Votación de etiquetas</title>
+<title>Etiquetas</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -11,55 +11,37 @@
 
 <div class="container">
 
-<img src="logo.png" width="100">
+<img src="logo.png" width="160">
 
 <h1>🏷️ Votación de etiquetas</h1>
 
-<p>Gracias por ayudarnos a elegir nuestros diseños 🙌</p>
+<p>Elige el diseño que más te guste 🙌</p>
 
 <hr>
 
 <h2>🥤 Gaseosas</h2>
 
-<div>
 <img src="gaseosa1.jpg" width="120"><br>
-<button class="button" onclick="votar('g1')">Votar</button>
-<span id="g1">0</span>
-</div>
+<button class="button" onclick="votar('g1')">Votar</button> <span id="g1">0</span>
 
-<div>
 <img src="gaseosa2.jpg" width="120"><br>
-<button class="button" onclick="votar('g2')">Votar</button>
-<span id="g2">0</span>
-</div>
+<button class="button" onclick="votar('g2')">Votar</button> <span id="g2">0</span>
 
-<div>
 <img src="gaseosa3.jpg" width="120"><br>
-<button class="button" onclick="votar('g3')">Votar</button>
-<span id="g3">0</span>
-</div>
+<button class="button" onclick="votar('g3')">Votar</button> <span id="g3">0</span>
 
 <hr>
 
 <h2>🧃 Jugos</h2>
 
-<div>
 <img src="jugo1.jpg" width="120"><br>
-<button class="button" onclick="votar('j1')">Votar</button>
-<span id="j1">0</span>
-</div>
+<button class="button" onclick="votar('j1')">Votar</button> <span id="j1">0</span>
 
-<div>
 <img src="jugo2.jpg" width="120"><br>
-<button class="button" onclick="votar('j2')">Votar</button>
-<span id="j2">0</span>
-</div>
+<button class="button" onclick="votar('j2')">Votar</button> <span id="j2">0</span>
 
-<div>
 <img src="jugo3.jpg" width="120"><br>
-<button class="button" onclick="votar('j3')">Votar</button>
-<span id="j3">0</span>
-</div>
+<button class="button" onclick="votar('j3')">Votar</button> <span id="j3">0</span>
 
 <hr>
 
@@ -86,10 +68,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const votosRef = ref(db,"votos");
+const votosRef = ref(db, "votos");
 
-get(votosRef).then(s=>{
-  if(!s.exists()){
+get(votosRef).then(snap=>{
+  if(!snap.exists()){
     set(votosRef,{g1:0,g2:0,g3:0,j1:0,j2:0,j3:0});
   }
 });
