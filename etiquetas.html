@@ -3,7 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<title>Etiquetas</title>
+<title>Votación de etiquetas</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -15,33 +15,55 @@
 
 <h1>🏷️ Votación de etiquetas</h1>
 
-<p>Elige el diseño que más te guste 🙌</p>
+<p style="max-width:700px; margin: 0 auto; line-height:1.6;">
+Ya eres parte de nosotros 🙌  
+decide con nosotros y elige la opción que creas mejor para representar nuestra marca.  
+Tu opinión forma parte de este sueño.
+</p>
 
 <hr>
 
 <h2>🥤 Gaseosas</h2>
 
-<img src="gaseosa1.jpg" width="120"><br>
-<button class="button" onclick="votar('g1')">Votar</button> <span id="g1">0</span>
+<div>
+<img src="gaseosa1.png" width="140"><br>
+<button class="button" onclick="votar('g1')">Votar</button>
+<span id="g1">0</span>
+</div>
 
-<img src="gaseosa2.jpg" width="120"><br>
-<button class="button" onclick="votar('g2')">Votar</button> <span id="g2">0</span>
+<div>
+<img src="gaseosa2.png" width="140"><br>
+<button class="button" onclick="votar('g2')">Votar</button>
+<span id="g2">0</span>
+</div>
 
-<img src="gaseosa3.jpg" width="120"><br>
-<button class="button" onclick="votar('g3')">Votar</button> <span id="g3">0</span>
+<div>
+<img src="gaseosa3.png" width="140"><br>
+<button class="button" onclick="votar('g3')">Votar</button>
+<span id="g3">0</span>
+</div>
 
 <hr>
 
 <h2>🧃 Jugos</h2>
 
-<img src="jugo1.jpg" width="120"><br>
-<button class="button" onclick="votar('j1')">Votar</button> <span id="j1">0</span>
+<div>
+<img src="jugo1.png" width="140"><br>
+<button class="button" onclick="votar('j1')">Votar</button>
+<span id="j1">0</span>
+</div>
 
-<img src="jugo2.jpg" width="120"><br>
-<button class="button" onclick="votar('j2')">Votar</button> <span id="j2">0</span>
+<div>
+<img src="jugo2.png" width="140"><br>
+<button class="button" onclick="votar('j2')">Votar</button>
+<span id="j2">0</span>
+</div>
 
-<img src="jugo3.jpg" width="120"><br>
-<button class="button" onclick="votar('j3')">Votar</button> <span id="j3">0</span>
+<div>
+<img src="jugo3.png" width="140"><br>
+<button class="button" onclick="votar('j3')">Votar</button>
+<span id="j3">0</span>
+</div>
 
 <hr>
 
@@ -72,14 +94,18 @@ const votosRef = ref(db, "votos");
 
 get(votosRef).then(snap=>{
   if(!snap.exists()){
-    set(votosRef,{g1:0,g2:0,g3:0,j1:0,j2:0,j3:0});
+    set(votosRef,{
+      g1:0,g2:0,g3:0,
+      j1:0,j2:0,j3:0
+    });
   }
 });
 
 onValue(votosRef,(snap)=>{
   const d = snap.val();
   for(let k in d){
-    document.getElementById(k).innerText = d[k];
+    const el = document.getElementById(k);
+    if(el) el.innerText = d[k];
   }
 });
 
