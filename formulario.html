@@ -4,25 +4,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Formulario - LA CRUCEÑA DISTRIBUCIONES</title>
+<title>Formulario</title>
 
 <link rel="stylesheet" href="styles.css">
-
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>📋 Completa tus datos</h1>
+<h1>📋 Formulario de aporte</h1>
 
 <form id="donationForm">
 
-<label>Nombre completo</label>
+<label>Nombre</label>
 <input type="text" id="nombre" required>
 
-<label>Número de WhatsApp</label>
+<label>WhatsApp</label>
 <input type="text" id="whatsapp" required>
 
 <label>Dirección</label>
@@ -31,79 +29,68 @@
 <label>Monto</label>
 <input type="number" id="monto" required>
 
-<h3 class="center">📲 Escanea el QR de pago</h3>
-
-<div class="center">
-<img src="qr.png" style="width:220px;border-radius:15px;border:2px solid #00cc44;">
-</div>
-
-<label>📸 Subir comprobante</label>
+<h3>📸 Comprobante</h3>
 <input type="file" required>
 
-<button type="submit" class="button">
-✅ Enviar por WhatsApp
+<button class="button" type="submit">
+✅ Enviar
 </button>
 
 </form>
 
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-const params = new URLSearchParams(window.location.search);
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://TU_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId: "TU_PROJECT_ID",
+  storageBucket: "TU_PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "XXX",
+  appId: "TU_APP_ID"
+};
 
-const paquete = params.get("paquete");
-const montoURL = params.get("monto");
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-const montoInput = document.getElementById("monto");
+const totalRef = ref(db, "total");
 
-// ===============================
-// CONFIGURAR MONTO AUTOMÁTICO
-// ===============================
-if (montoURL !== null) {
-    montoInput.value = montoURL;
-
-    // si NO es donación libre, bloquear edición
-    if (montoURL !== "0") {
-        montoInput.readOnly = true;
-    }
-}
-
-// ===============================
-// ENVIAR FORMULARIO
-// ===============================
 document.getElementById("donationForm").addEventListener("submit", function(e){
     e.preventDefault();
 
     const nombre = document.getElementById("nombre").value;
     const whatsapp = document.getElementById("whatsapp").value;
     const direccion = document.getElementById("direccion").value;
-    const montoFinal = montoInput.value;
+    const monto = parseInt(document.getElementById("monto").value);
+
+    get(totalRef).then((snap) => {
+
+        let actual = snap.val() || 0;
+        let nuevo = actual + monto;
+
+        set(totalRef, nuevo);
+
+    });
 
     const mensaje =
 `🙌 NUEVA DONACIÓN
-📦 Paquete: ${paquete || "Donación Libre"}
-👤 Nombre: ${nombre}
-📱 WhatsApp: ${whatsapp}
-🏠 Dirección: ${direccion}
-💰 Monto: ${montoFinal} Bs`;
+👤 ${nombre}
+📱 ${whatsapp}
+🏠 ${direccion}
+💰 ${monto} Bs`;
 
-    const url = `https://wa.me/59175166467?text=${encodeURIComponent(mensaje)}`;
+    window.location.href =
+`https://wa.me/59175166467?text=${encodeURIComponent(mensaje)}`;
 
-    // ===============================
-    // PASO 1: abrir WhatsApp seguro
-    // ===============================
-    window.location.href = url;
-
-    // ===============================
-    // PASO 2: luego ir a gracias
-    // ===============================
     setTimeout(() => {
         window.location.href = "gracias.html";
     }, 1500);
 
 });
-
 </script>
 
 </body>
