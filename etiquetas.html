@@ -67,7 +67,7 @@ font-size:16px;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
@@ -83,14 +83,24 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const votosRef = ref(db, "votos");
+const votersRef = ref(db, "votantes");
 
+// 🧠 ID único del usuario (persistente)
+let voterId = localStorage.getItem("voter_id");
+
+if (!voterId) {
+  voterId = "v_" + crypto.randomUUID();
+  localStorage.setItem("voter_id", voterId);
+}
+
+// votos locales
 let votos = {
   g1: 0,
   g2: 0,
   g3: 0
 };
 
-// 🔄 VOTOS EN TIEMPO REAL
+// 🔄 votos en tiempo real
 onValue(votosRef, (snapshot)=>{
 
   const data = snapshot.val();
@@ -108,7 +118,6 @@ onValue(votosRef, (snapshot)=>{
   document.getElementById("g3").innerText = votos.g3;
 
   let ganador = "g1";
-
   if (votos.g2 > votos[ganador]) ganador = "g2";
   if (votos.g3 > votos[ganador]) ganador = "g3";
 
@@ -116,28 +125,33 @@ onValue(votosRef, (snapshot)=>{
     "🏆 Etiqueta líder: " + ganador.toUpperCase();
 });
 
-// 🔒 BLOQUEO ANTI-SPAM
-function yaVoto(opcion){
-  return localStorage.getItem("voto_" + opcion);
-}
+// 🗳 VOTAR CON BLOQUEO REAL EN FIREBASE
+window.votar = async function(opcion){
 
-// 🗳 VOTAR
-window.votar = function(opcion){
+  const snap = await get(votersRef);
+  const data = snap.val() || {};
 
-  if (yaVoto(opcion)) {
-    alert("⚠ Ya votaste desde este dispositivo");
+  // 🔒 BLOQUEO REAL
+  if (data[voterId]) {
+    alert("⚠ Ya has votado anteriormente");
     return;
   }
 
+  // validar votos
   if (!votos[opcion] || isNaN(votos[opcion])) {
     votos[opcion] = 0;
   }
 
   votos[opcion] = Number(votos[opcion]) + 1;
 
+  // guardar votos globales
   set(votosRef, votos);
 
-  localStorage.setItem("voto_" + opcion, "1");
+  // registrar votante en Firebase
+  await set(ref(db, "votantes/" + voterId), {
+    voto: opcion,
+    fecha: new Date().toISOString()
+  });
 
   alert("💚 Gracias por votar. Ahora elige tu paquete promocional");
 
