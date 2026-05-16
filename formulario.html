@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formulario</title>
+<title>Formulario Co-fundadores</title>
 
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -27,6 +27,9 @@
 <form id="f">
 
 <input id="n" placeholder="Nombre" required><br><br>
+<input id="ap1" placeholder="Primer apellido" required><br><br>
+<input id="ap2" placeholder="Segundo apellido" required><br><br>
+
 <input id="w" placeholder="WhatsApp" required><br><br>
 <textarea id="d" placeholder="Dirección" required></textarea><br><br>
 
@@ -81,7 +84,7 @@ const db = getDatabase(app);
 
 const totalRef = ref(db, "total");
 
-// QR download
+// QR
 window.descargarQR = function(){
   const a = document.createElement("a");
   a.href = "qr.png";
@@ -89,7 +92,7 @@ window.descargarQR = function(){
   a.click();
 };
 
-// DETALLE DE PAQUETES
+// DETALLE
 const params = new URLSearchParams(window.location.search);
 let montoURL = params.get("monto");
 
@@ -105,11 +108,26 @@ if (!montoURL || isNaN(montoNum) || montoNum === 0) {
   montoInput.value = montoNum;
 }
 
+// GENERAR CÓDIGO CP
+function generarCodigo(monto, nombre, ap1, ap2){
+
+  const iniciales =
+    (nombre[0] || "") +
+    (ap1[0] || "") +
+    (ap2[0] || "");
+
+  const numero = Math.floor(Math.random() * 900 + 100);
+
+  return `CP-${monto}-${iniciales.toUpperCase()}${numero}`;
+}
+
 // BOTÓN PRINCIPAL
 document.getElementById("sendBtn").addEventListener("click", async (e)=>{
 e.preventDefault();
 
 let nombre = document.getElementById("n").value;
+let ap1 = document.getElementById("ap1").value;
+let ap2 = document.getElementById("ap2").value;
 let whatsapp = document.getElementById("w").value;
 let direccion = document.getElementById("d").value;
 let montoFinal = parseInt(document.getElementById("m").value);
@@ -119,20 +137,24 @@ if(!montoFinal || montoFinal <= 0){
   return;
 }
 
-// guardar total en Firebase
+// guardar total
 let snap = await get(totalRef);
 let total = snap.val() || 0;
 await set(totalRef, total + montoFinal);
 
+// código cofundador
+let codigo = generarCodigo(montoFinal, nombre, ap1, ap2);
+
 // mensaje WhatsApp
 let msg =
 `💚 Aporte recibido
-Nombre: ${nombre}
+Nombre: ${nombre} ${ap1} ${ap2}
 Monto: ${montoFinal} Bs
+Código co-fundador: ${codigo}
 Dirección: ${direccion}
 📌 Envía tu comprobante por este chat`;
 
-// OVERLAY DE CONFIRMACIÓN
+// OVERLAY PRO
 const overlay = document.createElement("div");
 overlay.style.position = "fixed";
 overlay.style.top = "0";
@@ -153,7 +175,7 @@ overlay.innerHTML = `
 <h2>💚 Gracias por ser parte de nuestros co-fundadores</h2>
 
 <p style="max-width:600px; line-height:1.6;">
-Como agradecimiento recibirás un 10% de descuento en todos tus pedidos durante 6 meses desde el inicio de producción.
+Como agradecimiento recibirás un 10% de descuento durante 6 meses desde el inicio de producción.
 </p>
 
 <br>
@@ -173,7 +195,7 @@ cursor:pointer;">
 
 document.body.appendChild(overlay);
 
-// SOLO AQUÍ REDIRIGE
+// REDIRIGE SOLO AQUÍ
 document.getElementById("aceptoBtn").onclick = function(){
   window.location.href =
   "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
