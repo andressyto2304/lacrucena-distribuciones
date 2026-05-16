@@ -11,16 +11,16 @@
 
 <div class="container">
 
-<h1>📋 Datos de aporte</h1>
+<h1>📲 Finalizar aporte</h1>
 
-<form id="donationForm">
+<form id="f">
 
-<input type="text" id="nombre" placeholder="Nombre" required>
-<input type="text" id="whatsapp" placeholder="WhatsApp" required>
-<textarea id="direccion" placeholder="Dirección" required></textarea>
-<input type="number" id="monto" placeholder="Monto" required>
+<input id="n" placeholder="Nombre" required><br><br>
+<input id="w" placeholder="WhatsApp" required><br><br>
+<textarea id="d" placeholder="Dirección" required></textarea><br><br>
+<input id="m" placeholder="Monto" type="number" required><br><br>
 
-<button class="button" type="submit">Enviar</button>
+<button class="button">Enviar</button>
 
 </form>
 
@@ -42,33 +42,22 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const totalRef = ref(db,"total");
 
-const totalRef = ref(db, "total");
+document.getElementById("f").onsubmit = async (e)=>{
+e.preventDefault();
 
-document.getElementById("donationForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+let m = parseInt(document.getElementById("m").value);
 
-    const nombre = document.getElementById("nombre").value;
-    const whatsapp = document.getElementById("whatsapp").value;
-    const direccion = document.getElementById("direccion").value;
-    const monto = parseInt(document.getElementById("monto").value);
+let snap = await get(totalRef);
+let t = snap.val() || 0;
 
-    const snap = await get(totalRef);
-    let actual = snap.val() || 0;
-    let nuevo = actual + monto;
+await set(totalRef, t + m);
 
-    await set(totalRef, nuevo);
+let msg = `Aporte:%0A${document.getElementById("n").value}%0A${m} Bs`;
 
-    const mensaje =
-`🙌 NUEVA DONACIÓN
-👤 ${nombre}
-📱 ${whatsapp}
-🏠 ${direccion}
-💰 ${monto} Bs`;
-
-    window.location.href =
-`https://wa.me/59175166467?text=${encodeURIComponent(mensaje)}`;
-});
+window.location.href = "https://wa.me/59175166467?text="+msg;
+};
 </script>
 
 </body>
