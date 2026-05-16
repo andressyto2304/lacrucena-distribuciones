@@ -1,61 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LA CRUCEÑA DISTRIBUCIONES</title>
-<link rel="stylesheet" href="styles.css">
-</head>
-
-<body>
-
-<div class="container">
-
-<img src="logo.png" width="220" style="opacity:0.9;">
-
-<h1>📲 Finalizar aporte</h1>
-
-<h2>📦 Detalle de tu selección</h2>
-<p id="detalle">Cargando...</p>
-
-<hr>
-
-<h2>🧾 Datos del aportante</h2>
-
-<input id="n" placeholder="Nombre completo" required><br><br>
-<input id="w" placeholder="WhatsApp" required><br><br>
-<textarea id="d" placeholder="Dirección de entrega" required></textarea><br><br>
-
-<input id="m" type="number" placeholder="Monto" required><br><br>
-
-<hr>
-
-<h2>💳 QR de pago</h2>
-<img src="qr.png" width="220"><br><br>
-
-<button type="button" onclick="descargarQR()">⬇ Descargar QR</button>
-
-<hr>
-
-<h2>📤 Subir comprobante de pago</h2>
-<input type="file" id="comprobante" accept="image/*"><br><br>
-
-<hr>
-
-<button type="button" id="sendBtn" disabled>
-Enviar a WhatsApp
-</button>
-
-</div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
-
-const firebaseConfig = {
+<script>
+firebase.initializeApp({
   apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
   authDomain: "lacrucena-db.firebaseapp.com",
   databaseURL: "https://lacrucena-db-default-rtdb.firebaseio.com",
@@ -63,59 +11,16 @@ const firebaseConfig = {
   storageBucket: "lacrucena-db.firebasestorage.app",
   messagingSenderId: "808407017494",
   appId: "1:808407017494:web:3202e7a9ee67e8d625ed37"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const storage = getStorage(app);
-
-const totalRef = ref(db, "total");
-const fundadoresRef = ref(db, "fundadores");
-
-// ---------------- QR ----------------
-window.descargarQR = function(){
-  const a = document.createElement("a");
-  a.href = "qr.png";
-  a.download = "qr.png";
-  a.click();
-};
-
-// ---------------- DETALLE PAQUETES ----------------
-const params = new URLSearchParams(window.location.search);
-let montoURL = params.get("monto");
-
-const detalle = document.getElementById("detalle");
-const montoInput = document.getElementById("m");
-
-let montoNum = Number(montoURL);
-
-if (!montoURL || isNaN(montoNum) || montoNum === 0) {
-  detalle.innerText = "💚 Gracias por tu aporte libre. Tú decides cuánto aportar.";
-  montoInput.placeholder = "Monto libre";
-} else if (montoNum === 150) {
-  detalle.innerText = "📦 Paquete Nº 1: 2 gaseosas de degustación.";
-  montoInput.value = 150;
-} else if (montoNum === 300) {
-  detalle.innerText = "📦 Paquete Nº 2: 2 gaseosas + 1 jugo 3L.";
-  montoInput.value = 300;
-} else if (montoNum === 500) {
-  detalle.innerText = "📦 Paquete Nº 3: 2 gaseosas + 2 jugos + gorra co-fundador.";
-  montoInput.value = 500;
-} else if (montoNum === 1000) {
-  detalle.innerText = "📦 Paquete Nº 4: 3 gaseosas + 3 jugos + gorra + polera co-fundador.";
-  montoInput.value = 1000;
-}
-
-// ---------------- BOTÓN ----------------
-const fileInput = document.getElementById("comprobante");
-const sendBtn = document.getElementById("sendBtn");
-
-fileInput.addEventListener("change", ()=>{
-  sendBtn.disabled = fileInput.files.length === 0;
 });
 
-// ---------------- CLICK PRINCIPAL ----------------
-sendBtn.onclick = async function () {
+const db = firebase.database();
+const storage = firebase.storage();
+
+const totalRef = db.ref("total");
+const fundadoresRef = db.ref("fundadores");
+
+// BOTÓN
+document.getElementById("sendBtn").onclick = async function () {
 
 let nombre = document.getElementById("n").value || "No registrado";
 let whatsapp = document.getElementById("w").value || "";
@@ -127,18 +32,19 @@ if (!montoFinal || montoFinal <= 0) {
   return;
 }
 
-// subir comprobante
-let file = fileInput.files[0];
+// archivo
+let file = document.getElementById("comprobante").files[0];
 let url = "";
 
+// subir imagen
 if (file) {
-  let fileRef = sRef(storage, "comprobantes/" + Date.now() + "_" + file.name);
-  await uploadBytes(fileRef, file);
-  url = await getDownloadURL(fileRef);
+  let ref = storage.ref("comprobantes/" + Date.now() + "_" + file.name);
+  await ref.put(file);
+  url = await ref.getDownloadURL();
 }
 
 // guardar cofundador
-await push(fundadoresRef, {
+await fundadoresRef.push({
   nombre,
   whatsapp,
   direccion,
@@ -148,69 +54,19 @@ await push(fundadoresRef, {
 });
 
 // sumar total
-let snap = await get(totalRef);
+let snap = await totalRef.once("value");
 let total = snap.val() || 0;
-await set(totalRef, total + montoFinal);
+await totalRef.set(total + montoFinal);
 
-// ---------------- OVERLAY DE AGRADECIMIENTO ----------------
-const overlay = document.createElement("div");
-overlay.style.position = "fixed";
-overlay.style.top = "0";
-overlay.style.left = "0";
-overlay.style.width = "100%";
-overlay.style.height = "100%";
-overlay.style.background = "rgba(0,0,0,0.9)";
-overlay.style.color = "white";
-overlay.style.display = "flex";
-overlay.style.alignItems = "center";
-overlay.style.justifyContent = "center";
-overlay.style.textAlign = "center";
-overlay.style.padding = "20px";
-overlay.style.zIndex = "9999";
-
-overlay.innerHTML = `
-<div>
-<h2>💚 Gracias por ser parte de nuestros co-fundadores</h2>
-
-<p style="max-width:600px; line-height:1.6;">
-Como agradecimiento especial, recibirás un 10% de descuento durante 6 meses desde el inicio de producción.
-</p>
-
-<br><br>
-
-<button id="goWA" style="
-padding:12px 25px;
-background:#25D366;
-color:white;
-border:none;
-border-radius:8px;
-font-size:16px;
-cursor:pointer;">
-✔ Acepto y continuar a WhatsApp
-</button>
-</div>
-`;
-
-document.body.appendChild(overlay);
-
-// SOLO AQUÍ SE VA A WHATSAPP
-document.getElementById("goWA").onclick = function () {
-
+// WHATSAPP
 let msg =
 `💚 Aporte recibido
 Nombre: ${nombre}
 Monto: ${montoFinal} Bs
-Dirección: ${direccion}
-📎 Comprobante enviado al sistema`;
+Dirección: ${direccion}`;
 
 window.location.href =
 "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
 
 };
-
-};
-
 </script>
-
-</body>
-</html>
