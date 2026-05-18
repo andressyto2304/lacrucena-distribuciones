@@ -47,55 +47,6 @@ progress {
   transition: all 0.6s ease;
 }
 
-.live {<!DOCTYPE html>
-<html lang="es">
-
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LA CRUCEÑA DISTRIBUCIONES</title>
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #000;
-  margin: 0;
-  padding: 20px;
-  color: #fff;
-}
-
-.card {
-  max-width: 650px;
-  margin: auto;
-  background: #111;
-  padding: 30px;
-  border-radius: 15px;
-}
-
-h1, h2, h3 {
-  text-align: center;
-  color: #fff;
-}
-
-p {
-  line-height: 1.6;
-  text-align: center;
-}
-
-.goal {
-  background: #1a1a1a;
-  padding: 15px;
-  border-radius: 10px;
-  margin-top: 20px;
-  text-align: center;
-}
-
-progress {
-  width: 100%;
-  height: 25px;
-  transition: all 0.6s ease;
-}
-
 .live {
   background: #0d0d0d;
   border: 1px solid #00cc44;
@@ -262,14 +213,12 @@ const db = getDatabase(app);
 /* 🔐 ADMIN OCULTO */
 const url = new URLSearchParams(window.location.search);
 
-const adminPanel = document.getElementById("adminPanel");
-
 if(url.get("admin")==="CRUCENA2026"){
-adminPanel.style.display="block";
+document.getElementById("adminPanel").style.display="block";
 }
 
-/* 🔥 NUEVA RUTA FIREBASE */
-const cofundadoresRef = ref(db, "cofundadores/usuarios");
+/* 🔥 RUTA FIREBASE */
+const cofundadoresRef = ref(db, "cofundadores");
 
 let excelData = [];
 
@@ -277,11 +226,11 @@ onValue(cofundadoresRef, (snapshot) => {
 
 const data = snapshot.val();
 
-const lista = document.getElementById("listaCofundadores");
+const cont = document.getElementById("listaCofundadores");
 
 const adminData = document.getElementById("adminData");
 
-lista.innerHTML = "";
+cont.innerHTML = "";
 
 adminData.innerHTML = "";
 
@@ -303,9 +252,11 @@ keys.reverse();
 
 keys.forEach((key,index)=>{
 
-const item = data[key] || {};
+const item = data[key];
 
-const nombre = item.nombre || key;
+if(item){
+
+const nombre = item.nombre || "Anónimo";
 const monto = Number(item.monto || 0);
 
 totalMonto += monto;
@@ -315,12 +266,11 @@ uid:key,
 nombre:nombre,
 monto:monto,
 codigo:item.codigo || "",
-whatsapp:item.whatsapp || "",
 direccion:item.direccion || "",
 fecha:item.fecha || ""
 });
 
-if(index === 0){
+if(index===0){
 ultima = nombre + " - " + monto + " Bs";
 }
 
@@ -332,7 +282,7 @@ div.className = "cofundador";
 
 div.innerHTML = `💚 <b>${nombre}</b> - ${monto} Bs`;
 
-lista.appendChild(div);
+cont.appendChild(div);
 
 }
 
@@ -345,11 +295,12 @@ adminDiv.style.textAlign = "left";
 adminDiv.innerHTML = `
 💚 <b>${nombre}</b><br>
 💰 ${monto} Bs<br>
-📞 ${item.whatsapp || "--"}<br>
 🆔 ${item.codigo || "--"}
 `;
 
 adminData.appendChild(adminDiv);
+
+}
 
 });
 
@@ -365,7 +316,7 @@ document.getElementById("contadorDonaciones").innerText = "0";
 
 document.getElementById("ultimaDonacion").innerText = "--";
 
-lista.innerHTML = "Aún no existen cofundadores registrados.";
+cont.innerHTML = "Aún no existen cofundadores registrados.";
 
 }
 
@@ -383,12 +334,12 @@ return;
 }
 
 let csv =
-"UID,Nombre,Monto,Codigo,WhatsApp,Direccion,Fecha\n";
+"UID,Nombre,Monto,Codigo,Direccion,Fecha\n";
 
 excelData.forEach((d)=>{
 
 csv +=
-`${d.uid},"${d.nombre}",${d.monto},"${d.codigo}","${d.whatsapp}","${d.direccion}","${d.fecha}"\n`;
+`${d.uid},"${d.nombre}",${d.monto},"${d.codigo}","${d.direccion}","${d.fecha}"\n`;
 
 });
 
