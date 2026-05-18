@@ -254,9 +254,7 @@ return new Date(fechaB) - new Date(fechaA);
 
 });
 
-contador = keys.length;
-
-document.getElementById("contadorDonaciones").innerText = contador;
+document.getElementById("contadorDonaciones").innerText = keys.length;
 
 keys.forEach((key,index)=>{
 
@@ -264,8 +262,19 @@ const item = data[key];
 
 if(item && typeof item === "object"){
 
-const nombre = item.nombre || "Anónimo";
-const monto = Number(item.monto || 0);
+/* 🔥 IGNORAR REGISTROS VACÍOS */
+if(
+!item.nombre ||
+item.nombre === "" ||
+item.monto === undefined
+){
+return;
+}
+
+const nombre = item.nombre;
+const monto = Number(item.monto);
+
+contador++;
 
 totalMonto += monto;
 
@@ -279,12 +288,12 @@ fecha:item.fecha || ""
 });
 
 /* 🔥 ÚLTIMA DONACIÓN REAL */
-if(index === 0){
+if(contador === 1){
 ultima = nombre + " - " + monto + " Bs";
 }
 
 /* 👥 ÚLTIMOS 15 COFUNDADORES */
-if(index < 15){
+if(contador <= 15){
 
 const div = document.createElement("div");
 
@@ -314,6 +323,8 @@ adminData.appendChild(adminDiv);
 }
 
 });
+
+document.getElementById("contadorDonaciones").innerText = contador;
 
 document.getElementById("ultimaDonacion").innerText = ultima;
 
