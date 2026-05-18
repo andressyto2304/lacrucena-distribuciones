@@ -244,11 +244,19 @@ if(data){
 
 const keys = Object.keys(data);
 
+/* 🔥 ORDENAR POR FECHA MÁS RECIENTE */
+keys.sort((a,b)=>{
+
+const fechaA = data[a].fecha || "";
+const fechaB = data[b].fecha || "";
+
+return new Date(fechaB) - new Date(fechaA);
+
+});
+
 contador = keys.length;
 
 document.getElementById("contadorDonaciones").innerText = contador;
-
-keys.reverse();
 
 keys.forEach((key,index)=>{
 
@@ -270,17 +278,20 @@ direccion:item.direccion || "",
 fecha:item.fecha || ""
 });
 
+/* 🔥 ÚLTIMA DONACIÓN REAL */
 if(index === 0){
 ultima = nombre + " - " + monto + " Bs";
 }
 
+/* 👥 ÚLTIMOS 15 COFUNDADORES */
 if(index < 15){
 
 const div = document.createElement("div");
 
 div.className = "cofundador";
 
-div.innerHTML = `💚 <b>${nombre}</b> - ${monto} Bs`;
+/* 🔥 SOLO NOMBRE */
+div.innerHTML = `💚 <b>${nombre}</b>`;
 
 cont.appendChild(div);
 
