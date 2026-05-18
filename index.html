@@ -217,77 +217,52 @@ if(url.get("admin")==="CRUCENA2026"){
 document.getElementById("adminPanel").style.display="block";
 }
 
-/* 🔥 RUTA FIREBASE REAL */
-const cofundadoresRef = ref(db, "cofundadores");
+/* 🔥 NUEVA RUTA FIREBASE */
+const cofundadoresRef = ref(db, "cofundadores/usuarios");
 
 onValue(cofundadoresRef, (snapshot) => {
 
 const data = snapshot.val();
 
-const cont = document.getElementById("listaCofundadores");
+const lista = document.getElementById("listaCofundadores");
 
-cont.innerHTML = "";
+lista.innerHTML = "";
 
 let contador = 0;
 let ultima = "--";
 
 if(data){
 
-/* 🔥 ELIMINAR CAMPOS QUE NO SON DONACIONES */
-const registros = [];
+const keys = Object.keys(data);
 
-Object.keys(data).forEach((key)=>{
+contador = keys.length;
 
-const item = data[key];
-
-if(
-item &&
-typeof item === "object" &&
-item.nombre &&
-item.monto
-){
-registros.push(item);
-}
-
-});
-
-/* 🔥 ORDENAR POR FECHA */
-registros.sort((a,b)=>{
-
-return new Date(b.fecha) - new Date(a.fecha);
-
-});
-
-contador = registros.length;
-
-/* 🔥 CONTADOR */
 document.getElementById("contadorDonaciones").innerText = contador;
 
-/* 🔥 ÚLTIMA DONACIÓN */
-if(registros.length > 0){
+keys.reverse();
 
-ultima =
-registros[0].nombre +
-" - " +
-registros[0].monto +
-" Bs";
+keys.slice(0,15).forEach((key,index)=>{
 
+const item = data[key] || {};
+
+const nombre = item.nombre || key;
+const monto = item.monto || 0;
+
+if(index === 0){
+ultima = nombre + " - " + monto + " Bs";
 }
-
-document.getElementById("ultimaDonacion").innerText = ultima;
-
-/* 🔥 ÚLTIMOS 15 COFUNDADORES */
-registros.slice(0,15).forEach((item)=>{
 
 const div = document.createElement("div");
 
 div.className = "cofundador";
 
-div.innerHTML = `💚 <b>${item.nombre}</b>`;
+div.innerHTML = `💚 <b>${nombre}</b> - ${monto} Bs`;
 
-cont.appendChild(div);
+lista.appendChild(div);
 
 });
+
+document.getElementById("ultimaDonacion").innerText = ultima;
 
 }else{
 
@@ -295,7 +270,7 @@ document.getElementById("contadorDonaciones").innerText = "0";
 
 document.getElementById("ultimaDonacion").innerText = "--";
 
-cont.innerHTML = "Aún no existen cofundadores registrados.";
+lista.innerHTML = "Aún no existen cofundadores registrados.";
 
 }
 
