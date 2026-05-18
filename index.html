@@ -217,7 +217,7 @@ if(url.get("admin")==="CRUCENA2026"){
 document.getElementById("adminPanel").style.display="block";
 }
 
-/* 🔥 RUTA FIREBASE */
+/* 🔥 RUTA CORRECTA FIREBASE */
 const cofundadoresRef = ref(db, "cofundadores");
 
 let excelData = [];
@@ -254,7 +254,7 @@ keys.forEach((key,index)=>{
 
 const item = data[key];
 
-if(item){
+if(item && typeof item === "object"){
 
 const nombre = item.nombre || "Anónimo";
 const monto = Number(item.monto || 0);
@@ -270,7 +270,7 @@ direccion:item.direccion || "",
 fecha:item.fecha || ""
 });
 
-if(index===0){
+if(index === 0){
 ultima = nombre + " - " + monto + " Bs";
 }
 
