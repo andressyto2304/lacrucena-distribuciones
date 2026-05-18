@@ -264,39 +264,41 @@ porcentaje = 100;
 }
 
 document.getElementById("progressBar").value = porcentaje;
+
 document.getElementById("progressText").innerText =
 porcentaje.toFixed(1) + "%";
 
 });
 
-/* 🔥 COFUNDADORES */
+/* 🔥 NUEVA RUTA FIREBASE */
 const cofundadoresRef = ref(db, "cofundadores/usuarios");
 
 let excelData = [];
 
 onValue(cofundadoresRef, (snapshot) => {
 
-const data = snapshot.val() || {};
+const data = snapshot.val();
 
 const lista = document.getElementById("listaCofundadores");
+
 const adminData = document.getElementById("adminData");
 
 lista.innerHTML = "";
+
 adminData.innerHTML = "";
+
 excelData = [];
 
 let contador = 0;
 let ultima = "--";
-let totalMonto = 0;
 
-const keys = Object.keys(data || {});
+if(data){
 
-if(keys.length === 0){
-document.getElementById("contadorDonaciones").innerText = "0";
-document.getElementById("ultimaDonacion").innerText = "--";
-lista.innerHTML = "Aún no existen cofundadores registrados.";
-return;
-}
+const keys = Object.keys(data);
+
+contador = keys.length;
+
+document.getElementById("contadorDonaciones").innerText = contador;
 
 keys.reverse();
 
@@ -304,15 +306,8 @@ keys.slice(0,15).forEach((key,index)=>{
 
 const item = data[key] || {};
 
-const nombre = item.nombre || "Sin nombre";
-const monto = Number(item.monto || 0);
-
-if(index === 0){
-ultima = nombre + " - " + monto + " Bs";
-}
-
-contador++;
-totalMonto += monto;
+const nombre = item.nombre || key;
+const monto = item.monto || 0;
 
 excelData.push({
 uid:key,
@@ -323,24 +318,62 @@ direccion:item.direccion || "",
 fecha:item.fecha || ""
 });
 
-/* LISTA PUBLICA */
-lista.innerHTML += `
-<div class="cofundador">💚 <b>${nombre}</b> - ${monto} Bs</div>
-`;
+if(index === 0){
+ultima = nombre + " - " + monto + " Bs";
+}
 
-/* PANEL ADMIN */
-adminData.innerHTML += `
-<div class="admin-item"
-style="border-bottom:1px solid #333;padding:10px;margin-bottom:10px;text-align:left;">
+const div = document.createElement("div");
+
+div.className = "cofundador";
+
+div.innerHTML = `💚 <b>${nombre}</b> - ${monto} Bs`;
+
+lista.appendChild(div);
+
+/* 🔥 ADMIN DINÁMICO */
+
+const adminDiv =
+document.createElement("div");
+
+adminDiv.className = "admin-item";
+
+adminDiv.style.borderBottom =
+"1px solid #333";
+
+adminDiv.style.padding = "10px";
+
+adminDiv.style.textAlign = "left";
+
+adminDiv.style.marginBottom = "10px";
+
+adminDiv.innerHTML = `
 
 💚 <b>${nombre}</b><br><br>
 
 💰 Monto:
-<input type="number" value="${monto}" id="monto_${key}"
-style="width:120px;padding:5px;border-radius:5px;border:none;">
+<input
+type="number"
+value="${monto}"
+id="monto_${key}"
+style="
+width:120px;
+padding:5px;
+border-radius:5px;
+border:none;
+margin-top:5px;
+">
 
-<button onclick="modificarMonto('${key}')"
-style="background:#007bff;color:white;border:none;padding:6px 10px;border-radius:5px;margin-left:5px;">
+<button
+onclick="modificarMonto('${key}')"
+style="
+background:#007bff;
+color:white;
+border:none;
+padding:6px 10px;
+border-radius:5px;
+margin-left:5px;
+cursor:pointer;
+">
 Guardar
 </button>
 
@@ -350,42 +383,75 @@ Guardar
 
 <br><br>
 
-<button onclick="eliminarRegistro('${key}')"
-style="background:#cc0000;color:white;border:none;padding:8px 12px;border-radius:5px;">
-🗑 Eliminar
+<button
+onclick="eliminarRegistro('${key}')"
+style="
+background:#cc0000;
+color:white;
+border:none;
+padding:8px 12px;
+border-radius:5px;
+cursor:pointer;
+">
+🗑 Eliminar Registro
 </button>
 
-</div>
 `;
+
+adminData.appendChild(adminDiv);
 
 });
 
-document.getElementById("contadorDonaciones").innerText = contador;
 document.getElementById("ultimaDonacion").innerText = ultima;
+
 document.getElementById("adminTotal").innerText = contador;
-document.getElementById("adminMonto").innerText = totalMonto;
+
+document.getElementById("adminMonto").innerText =
+excelData.reduce((a,b)=>a + Number(b.monto || 0),0);
+
+}else{
+
+document.getElementById("contadorDonaciones").innerText = "0";
+
+document.getElementById("ultimaDonacion").innerText = "--";
+
+lista.innerHTML = "Aún no existen cofundadores registrados.";
+
+}
 
 });
 
 /* 📥 EXPORTAR CSV */
 document.getElementById("exportBtn").addEventListener("click",()=>{
 
-if(!excelData.length){
+if(excelData.length===0){
+
 alert("No hay datos");
+
 return;
+
 }
 
-let csv = "UID,Nombre,Monto,Codigo,Direccion,Fecha\n";
+let csv =
+"UID,Nombre,Monto,Codigo,Direccion,Fecha\n";
 
 excelData.forEach((d)=>{
-csv += `${d.uid},"${d.nombre}",${d.monto},"${d.codigo}","${d.direccion}","${d.fecha}"\n`;
+
+csv +=
+`${d.uid},"${d.nombre}",${d.monto},"${d.codigo}","${d.direccion}","${d.fecha}"\n`;
+
 });
 
-const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+const blob = new Blob([csv], {
+type:"text/csv;charset=utf-8;"
+});
+
 const link = document.createElement("a");
 
 link.href = URL.createObjectURL(blob);
+
 link.download = "cofundadores.csv";
+
 link.click();
 
 });
@@ -393,41 +459,75 @@ link.click();
 /* 🔥 MODIFICAR MONTO */
 window.modificarMonto = async function(uid){
 
-const input = document.getElementById("monto_"+uid);
-const nuevoMonto = Number(input?.value || 0);
+const nuevoMonto = Number(
+document.getElementById("monto_"+uid).value
+);
 
-if(nuevoMonto <= 0){
+if(!nuevoMonto || nuevoMonto <= 0){
+
 alert("Monto inválido");
+
 return;
+
 }
 
-await update(ref(db,"cofundadores/usuarios/"+uid),{
+await update(
+ref(db,"cofundadores/usuarios/"+uid),
+{
 monto:nuevoMonto
-});
+}
+);
 
 alert("Monto actualizado");
+
 };
 
 /* 🔥 ELIMINAR REGISTRO */
 window.eliminarRegistro = async function(uid){
 
-if(!confirm("¿Eliminar este registro?")) return;
+const confirmar = confirm(
+"¿Eliminar este registro?"
+);
 
-await remove(ref(db,"cofundadores/usuarios/"+uid));
+if(!confirmar){
+return;
+}
+
+await remove(
+ref(db,"cofundadores/usuarios/"+uid)
+);
 
 alert("Registro eliminado");
+
 };
 
 /* 🔥 BUSCADOR */
-document.getElementById("buscarNombre").addEventListener("input",function(){
+document.getElementById("buscarNombre")
+.addEventListener("keyup",function(){
 
-const texto = this.value.toLowerCase();
-const items = document.querySelectorAll(".admin-item");
+const texto =
+this.value.toLowerCase();
+
+const items =
+document.querySelectorAll(".admin-item");
 
 items.forEach((item)=>{
-item.style.display = item.innerText.toLowerCase().includes(texto)
-? "block"
-: "none";
+
+if(
+item.innerText
+.toLowerCase()
+.includes(texto)
+){
+item.style.display = "block";
+}else{
+item.style.display = "none";
+}
+
 });
 
 });
+
+</script>
+
+</body>
+</html>
