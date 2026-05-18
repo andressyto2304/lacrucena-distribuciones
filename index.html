@@ -217,10 +217,8 @@ if(url.get("admin")==="CRUCENA2026"){
 document.getElementById("adminPanel").style.display="block";
 }
 
-/* 🔥 RUTA CORRECTA FIREBASE */
+/* 🔥 RUTA FIREBASE REAL */
 const cofundadoresRef = ref(db, "cofundadores");
-
-let excelData = [];
 
 onValue(cofundadoresRef, (snapshot) => {
 
@@ -228,109 +226,68 @@ const data = snapshot.val();
 
 const cont = document.getElementById("listaCofundadores");
 
-const adminData = document.getElementById("adminData");
-
 cont.innerHTML = "";
-
-adminData.innerHTML = "";
-
-excelData = [];
 
 let contador = 0;
 let ultima = "--";
-let totalMonto = 0;
 
 if(data){
 
-const keys = Object.keys(data);
+/* 🔥 ELIMINAR CAMPOS QUE NO SON DONACIONES */
+const registros = [];
 
-/* 🔥 ORDENAR POR FECHA MÁS RECIENTE */
-keys.sort((a,b)=>{
-
-const fechaA = data[a].fecha || "";
-const fechaB = data[b].fecha || "";
-
-return new Date(fechaB) - new Date(fechaA);
-
-});
-
-keys.forEach((key,index)=>{
+Object.keys(data).forEach((key)=>{
 
 const item = data[key];
 
-if(item && typeof item === "object"){
-
-/* 🔥 SOPORTAR DIFERENTES NOMBRES DE CAMPOS */
-const nombre =
-item.nombre ||
-item.Nombre ||
-item.n ||
-"";
-
-const monto =
-Number(item.monto || item.Monto || item.m || 0);
-
-/* 🔥 IGNORAR SOLO SI NO HAY NOMBRE */
-if(nombre === ""){
-return;
+if(
+item &&
+typeof item === "object" &&
+item.nombre &&
+item.monto
+){
+registros.push(item);
 }
 
-contador++;
-
-totalMonto += monto;
-
-excelData.push({
-uid:key,
-nombre:nombre,
-monto:monto,
-codigo:item.codigo || "",
-direccion:item.direccion || "",
-fecha:item.fecha || ""
 });
 
-/* 🔥 ÚLTIMA DONACIÓN REAL */
-if(contador === 1){
-ultima = nombre + " - " + monto + " Bs";
+/* 🔥 ORDENAR POR FECHA */
+registros.sort((a,b)=>{
+
+return new Date(b.fecha) - new Date(a.fecha);
+
+});
+
+contador = registros.length;
+
+/* 🔥 CONTADOR */
+document.getElementById("contadorDonaciones").innerText = contador;
+
+/* 🔥 ÚLTIMA DONACIÓN */
+if(registros.length > 0){
+
+ultima =
+registros[0].nombre +
+" - " +
+registros[0].monto +
+" Bs";
+
 }
 
-/* 👥 ÚLTIMOS 15 COFUNDADORES */
-if(contador <= 15){
+document.getElementById("ultimaDonacion").innerText = ultima;
+
+/* 🔥 ÚLTIMOS 15 COFUNDADORES */
+registros.slice(0,15).forEach((item)=>{
 
 const div = document.createElement("div");
 
 div.className = "cofundador";
 
-div.innerHTML = `💚 <b>${nombre}</b>`;
+div.innerHTML = `💚 <b>${item.nombre}</b>`;
 
 cont.appendChild(div);
 
-}
-
-const adminDiv = document.createElement("div");
-
-adminDiv.style.borderBottom = "1px solid #333";
-adminDiv.style.padding = "10px";
-adminDiv.style.textAlign = "left";
-
-adminDiv.innerHTML = `
-💚 <b>${nombre}</b><br>
-💰 ${monto} Bs<br>
-🆔 ${item.codigo || "--"}
-`;
-
-adminData.appendChild(adminDiv);
-
-}
-
 });
-
-document.getElementById("contadorDonaciones").innerText = contador;
-
-document.getElementById("ultimaDonacion").innerText = ultima;
-
-document.getElementById("adminTotal").innerText = contador;
-
-document.getElementById("adminMonto").innerText = totalMonto;
 
 }else{
 
