@@ -47,6 +47,55 @@ progress {
   transition: all 0.6s ease;
 }
 
+.live {<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LA CRUCEÑA DISTRIBUCIONES</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #000;
+  margin: 0;
+  padding: 20px;
+  color: #fff;
+}
+
+.card {
+  max-width: 650px;
+  margin: auto;
+  background: #111;
+  padding: 30px;
+  border-radius: 15px;
+}
+
+h1, h2, h3 {
+  text-align: center;
+  color: #fff;
+}
+
+p {
+  line-height: 1.6;
+  text-align: center;
+}
+
+.goal {
+  background: #1a1a1a;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+progress {
+  width: 100%;
+  height: 25px;
+  transition: all 0.6s ease;
+}
+
 .live {
   background: #0d0d0d;
   border: 1px solid #00cc44;
@@ -161,9 +210,27 @@ style="background:#25D366;">
 
 <!-- 🔐 ADMIN OCULTO -->
 <div id="adminPanel">
+
 <h3>🔐 Panel Admin</h3>
-<p>Acceso activado</p>
+
+<p style="color:#00ff88;">
+Acceso administrativo activado
+</p>
+
+<hr>
+
+<p>👥 Total cofundadores: <span id="adminTotal">0</span></p>
+
+<p>💰 Total recaudado: <span id="adminMonto">0</span> Bs</p>
+
+<button id="exportBtn" class="button">
+📥 Exportar Excel CSV
+</button>
+
+<br><br>
+
 <div id="adminData"></div>
+
 </div>
 
 </div>
@@ -195,12 +262,16 @@ const db = getDatabase(app);
 /* 🔐 ADMIN OCULTO */
 const url = new URLSearchParams(window.location.search);
 
+const adminPanel = document.getElementById("adminPanel");
+
 if(url.get("admin")==="CRUCENA2026"){
-document.getElementById("adminPanel").style.display="block";
+adminPanel.style.display="block";
 }
 
 /* 🔥 NUEVA RUTA FIREBASE */
 const cofundadoresRef = ref(db, "cofundadores/usuarios");
+
+let excelData = [];
 
 onValue(cofundadoresRef, (snapshot) => {
 
@@ -208,10 +279,17 @@ const data = snapshot.val();
 
 const lista = document.getElementById("listaCofundadores");
 
+const adminData = document.getElementById("adminData");
+
 lista.innerHTML = "";
+
+adminData.innerHTML = "";
+
+excelData = [];
 
 let contador = 0;
 let ultima = "--";
+let totalMonto = 0;
 
 if(data){
 
@@ -223,16 +301,30 @@ document.getElementById("contadorDonaciones").innerText = contador;
 
 keys.reverse();
 
-keys.slice(0,15).forEach((key,index)=>{
+keys.forEach((key,index)=>{
 
 const item = data[key] || {};
 
 const nombre = item.nombre || key;
-const monto = item.monto || 0;
+const monto = Number(item.monto || 0);
+
+totalMonto += monto;
+
+excelData.push({
+uid:key,
+nombre:nombre,
+monto:monto,
+codigo:item.codigo || "",
+whatsapp:item.whatsapp || "",
+direccion:item.direccion || "",
+fecha:item.fecha || ""
+});
 
 if(index === 0){
 ultima = nombre + " - " + monto + " Bs";
 }
+
+if(index < 15){
 
 const div = document.createElement("div");
 
@@ -242,9 +334,30 @@ div.innerHTML = `💚 <b>${nombre}</b> - ${monto} Bs`;
 
 lista.appendChild(div);
 
+}
+
+const adminDiv = document.createElement("div");
+
+adminDiv.style.borderBottom = "1px solid #333";
+adminDiv.style.padding = "10px";
+adminDiv.style.textAlign = "left";
+
+adminDiv.innerHTML = `
+💚 <b>${nombre}</b><br>
+💰 ${monto} Bs<br>
+📞 ${item.whatsapp || "--"}<br>
+🆔 ${item.codigo || "--"}
+`;
+
+adminData.appendChild(adminDiv);
+
 });
 
 document.getElementById("ultimaDonacion").innerText = ultima;
+
+document.getElementById("adminTotal").innerText = contador;
+
+document.getElementById("adminMonto").innerText = totalMonto;
 
 }else{
 
@@ -255,6 +368,41 @@ document.getElementById("ultimaDonacion").innerText = "--";
 lista.innerHTML = "Aún no existen cofundadores registrados.";
 
 }
+
+});
+
+/* 📥 EXPORTAR CSV */
+document.getElementById("exportBtn").addEventListener("click",()=>{
+
+if(excelData.length===0){
+
+alert("No hay datos");
+
+return;
+
+}
+
+let csv =
+"UID,Nombre,Monto,Codigo,WhatsApp,Direccion,Fecha\n";
+
+excelData.forEach((d)=>{
+
+csv +=
+`${d.uid},"${d.nombre}",${d.monto},"${d.codigo}","${d.whatsapp}","${d.direccion}","${d.fecha}"\n`;
+
+});
+
+const blob = new Blob([csv], {
+type:"text/csv;charset=utf-8;"
+});
+
+const link = document.createElement("a");
+
+link.href = URL.createObjectURL(blob);
+
+link.download = "cofundadores.csv";
+
+link.click();
 
 });
 
