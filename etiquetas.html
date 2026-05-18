@@ -45,7 +45,7 @@ cursor:pointer;
 img{
 width:100%;
 max-height:260px;
-object-fit:contain; /* 👈 clave */
+object-fit:contain;
 background:#000;
 border-radius:10px;
 margin-top:10px;
@@ -86,12 +86,15 @@ background:#007bff;
 
 <img src="gaseosa 1.png">
 <button onclick="vote('gaseosa','g1')">Gaseosa 1</button>
+<p>🔥 Votos: <span id="g1v">0</span></p>
 
 <img src="gaseosa 2.jpg">
 <button onclick="vote('gaseosa','g2')">Gaseosa 2</button>
+<p>🔥 Votos: <span id="g2v">0</span></p>
 
 <img src="gaseosa 3.png">
 <button onclick="vote('gaseosa','g3')">Gaseosa 3</button>
+<p>🔥 Votos: <span id="g3v">0</span></p>
 
 </div>
 
@@ -100,12 +103,15 @@ background:#007bff;
 
 <img src="jugo 1.png">
 <button onclick="vote('jugo','j1')">Jugo 1</button>
+<p>🔥 Votos: <span id="j1v">0</span></p>
 
 <img src="jugo 2.png">
 <button onclick="vote('jugo','j2')">Jugo 2</button>
+<p>🔥 Votos: <span id="j2v">0</span></p>
 
 <img src="jugo 3.png">
 <button onclick="vote('jugo','j3')">Jugo 3</button>
+<p>🔥 Votos: <span id="j3v">0</span></p>
 
 </div>
 
@@ -118,7 +124,14 @@ background:#007bff;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+import {
+getDatabase,
+ref,
+get,
+set,
+onValue
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzKqIZC8Jg4zC8C8C8",
@@ -137,12 +150,19 @@ const votosRef = ref(db,"votos");
 const userRefBase = "usuarios/";
 
 function getUserId(){
+
 let id = localStorage.getItem("uid");
+
 if(!id){
+
 id = "U_" + Math.random().toString(36).substring(2,12);
+
 localStorage.setItem("uid",id);
+
 }
+
 return id;
+
 }
 
 const uid = getUserId();
@@ -150,50 +170,83 @@ const uid = getUserId();
 let gaseosaVoted = false;
 let jugoVoted = false;
 
+/* 🔥 MOSTRAR VOTOS EN TIEMPO REAL */
+onValue(votosRef,(snapshot)=>{
+
+const votos = snapshot.val() || {};
+
+document.getElementById("g1v").innerText = votos.g1 || 0;
+document.getElementById("g2v").innerText = votos.g2 || 0;
+document.getElementById("g3v").innerText = votos.g3 || 0;
+
+document.getElementById("j1v").innerText = votos.j1 || 0;
+document.getElementById("j2v").innerText = votos.j2 || 0;
+document.getElementById("j3v").innerText = votos.j3 || 0;
+
+});
+
 // 🔥 VOTAR CON BLOQUEO REAL
 window.vote = async function(cat,opt){
 
 const userRef = ref(db,userRefBase+uid);
+
 const snap = await get(userRef);
+
 const data = snap.val()||{};
 
 // bloqueo real
 if(cat==="gaseosa" && data.gaseosaVotado){
+
 alert("Ya votaste gaseosas");
+
 return;
+
 }
 
 if(cat==="jugo" && data.jugoVotado){
+
 alert("Ya votaste jugos");
+
 return;
+
 }
 
 // guardar usuario
 if(cat==="gaseosa"){
+
 await set(userRef,{...data,gaseosaVotado:true,gaseosa:opt});
+
 gaseosaVoted = true;
+
 }
 
 if(cat==="jugo"){
+
 await set(userRef,{...data,jugoVotado:true,jugo:opt});
+
 jugoVoted = true;
+
 }
 
 // sumar votos
 const snapVotes = await get(votosRef);
+
 let votos = snapVotes.val()||{};
 
 votos[opt]=(votos[opt]||0)+1;
 
 await set(votosRef,votos);
 
+/* 🔥 MENSAJE */
+alert("💚 Gracias por votar por tu etiqueta favorita");
+
 // validar avance real
 checkFinish();
+
 };
 
 function checkFinish(){
 
-// 🔥 ahora sí valida Firebase (no memoria)
 const userRef = ref(db,userRefBase+uid);
 
 get(userRef).then(snap=>{
@@ -205,7 +258,9 @@ if(d.gaseosaVotado && d.jugoVotado){
 document.getElementById("nextBtn").style.display="block";
 
 setTimeout(()=>{
+
 window.location.href="paquetes.html";
+
 },1500);
 
 }
@@ -216,7 +271,9 @@ window.location.href="paquetes.html";
 
 // fallback
 window.goNext = function(){
+
 window.location.href="paquetes.html";
+
 };
 
 </script>
