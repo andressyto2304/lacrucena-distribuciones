@@ -150,7 +150,7 @@ Bienvenido, nosotros somos <strong>LA CRUCEÑA DISTRIBUCIONES</strong> y estamos
 </div>
 
 <!-- FLUJO -->
-  
+
 <!-- BOTÓN VER PITCH DECK -->
 <a href="microp.pdf"
 target="_blank"
@@ -161,12 +161,17 @@ style="background:#25D366;">
 
 </a>
 
- <a href="roadmap.html" class="button" style="background:#25D366;">
+<a href="roadmap.html" class="button" style="background:#25D366;">
 🚀 Ver hoja de ruta del Proyecto
 </a>
-<a href="etiquetas.html" class="button">🗳️ Comenzar votación de etiquetas</a>
 
-<a href="https://wa.me/59175166467" class="button" style="background:#25D366;">
+<a href="etiquetas.html" class="button">
+🗳️ Comenzar votación de etiquetas
+</a>
+
+<a href="https://wa.me/59175166467"
+class="button"
+style="background:#25D366;">
 💬 Contacto WhatsApp
 </a>
 
@@ -184,6 +189,19 @@ Acceso administrativo activado
 <p>👥 Total cofundadores: <span id="adminTotal">0</span></p>
 
 <p>💰 Total recaudado: <span id="adminMonto">0</span> Bs</p>
+
+<input
+type="text"
+id="buscarNombre"
+placeholder="🔎 Buscar por nombre..."
+style="
+width:100%;
+padding:10px;
+border-radius:8px;
+border:none;
+margin-top:10px;
+margin-bottom:15px;
+">
 
 <button id="exportBtn" class="button">
 📥 Exportar Excel CSV
@@ -205,7 +223,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/fireba
 import {
 getDatabase,
 ref,
-onValue
+onValue,
+update,
+remove
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -261,7 +281,13 @@ const data = snapshot.val();
 
 const lista = document.getElementById("listaCofundadores");
 
+const adminData = document.getElementById("adminData");
+
 lista.innerHTML = "";
+
+adminData.innerHTML = "";
+
+excelData = [];
 
 let contador = 0;
 let ultima = "--";
@@ -303,6 +329,76 @@ div.className = "cofundador";
 div.innerHTML = `💚 <b>${nombre}</b> - ${monto} Bs`;
 
 lista.appendChild(div);
+
+/* 🔥 ADMIN DINÁMICO */
+
+const adminDiv =
+document.createElement("div");
+
+adminDiv.className = "admin-item";
+
+adminDiv.style.borderBottom =
+"1px solid #333";
+
+adminDiv.style.padding = "10px";
+
+adminDiv.style.textAlign = "left";
+
+adminDiv.style.marginBottom = "10px";
+
+adminDiv.innerHTML = `
+
+💚 <b>${nombre}</b><br><br>
+
+💰 Monto:
+<input
+type="number"
+value="${monto}"
+id="monto_${key}"
+style="
+width:120px;
+padding:5px;
+border-radius:5px;
+border:none;
+margin-top:5px;
+">
+
+<button
+onclick="modificarMonto('${key}')"
+style="
+background:#007bff;
+color:white;
+border:none;
+padding:6px 10px;
+border-radius:5px;
+margin-left:5px;
+cursor:pointer;
+">
+Guardar
+</button>
+
+<br><br>
+
+🆔 ${item.codigo || "--"}
+
+<br><br>
+
+<button
+onclick="eliminarRegistro('${key}')"
+style="
+background:#cc0000;
+color:white;
+border:none;
+padding:8px 12px;
+border-radius:5px;
+cursor:pointer;
+">
+🗑 Eliminar Registro
+</button>
+
+`;
+
+adminData.appendChild(adminDiv);
 
 });
 
@@ -357,6 +453,77 @@ link.href = URL.createObjectURL(blob);
 link.download = "cofundadores.csv";
 
 link.click();
+
+});
+
+/* 🔥 MODIFICAR MONTO */
+window.modificarMonto = async function(uid){
+
+const nuevoMonto = Number(
+document.getElementById("monto_"+uid).value
+);
+
+if(!nuevoMonto || nuevoMonto <= 0){
+
+alert("Monto inválido");
+
+return;
+
+}
+
+await update(
+ref(db,"cofundadores/usuarios/"+uid),
+{
+monto:nuevoMonto
+}
+);
+
+alert("Monto actualizado");
+
+};
+
+/* 🔥 ELIMINAR REGISTRO */
+window.eliminarRegistro = async function(uid){
+
+const confirmar = confirm(
+"¿Eliminar este registro?"
+);
+
+if(!confirmar){
+return;
+}
+
+await remove(
+ref(db,"cofundadores/usuarios/"+uid)
+);
+
+alert("Registro eliminado");
+
+};
+
+/* 🔥 BUSCADOR */
+document.getElementById("buscarNombre")
+.addEventListener("keyup",function(){
+
+const texto =
+this.value.toLowerCase();
+
+const items =
+document.querySelectorAll(".admin-item");
+
+items.forEach((item)=>{
+
+if(
+item.innerText
+.toLowerCase()
+.includes(texto)
+){
+item.style.display = "block";
+}else{
+item.style.display = "none";
+}
+
+});
 
 });
 
