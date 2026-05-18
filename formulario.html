@@ -27,10 +27,13 @@
 <form id="f">
 
 <input id="n" placeholder="Nombre" required><br><br>
+
 <input id="ap1" placeholder="Primer apellido" required><br><br>
+
 <input id="ap2" placeholder="Segundo apellido" required><br><br>
 
 <input id="w" placeholder="WhatsApp" required><br><br>
+
 <textarea id="d" placeholder="Dirección" required></textarea><br><br>
 
 <input id="m" type="number" required><br><br>
@@ -67,93 +70,156 @@ Enviar a WhatsApp
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+import {
+getDatabase,
+ref,
+get,
+set,
+push
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
-  authDomain: "lacrucena-db.firebaseapp.com",
-  databaseURL: "https://lacrucena-db-default-rtdb.firebaseio.com",
-  projectId: "lacrucena-db",
-  storageBucket: "lacrucena-db.firebasestorage.app",
-  messagingSenderId: "808407017494",
-  appId: "1:808407017494:web:3202e7a9ee67e8d625ed37"
+apiKey: "AIzaSyAzKqIZC8Jg4zqwxTwMN0OgfmE-xLKmHHc",
+authDomain: "lacrucena-db.firebaseapp.com",
+databaseURL: "https://lacrucena-db-default-rtdb.firebaseio.com",
+projectId: "lacrucena-db",
+storageBucket: "lacrucena-db.firebasestorage.app",
+messagingSenderId: "808407017494",
+appId: "1:808407017494:web:3202e7a9ee67e8d625ed37"
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
 
 const totalRef = ref(db, "total");
-const cofRef = ref(db, "cofundadores");
+
+/* 🔥 NUEVA RUTA CORRECTA */
+const cofRef = ref(db, "cofundadores/usuarios");
 
 // QR download
 window.descargarQR = function(){
-  const a = document.createElement("a");
-  a.href = "qr.png";
-  a.download = "qr.png";
-  a.click();
+
+const a = document.createElement("a");
+
+a.href = "qr.png";
+
+a.download = "qr.png";
+
+a.click();
+
 };
 
 // DETALLE
 const params = new URLSearchParams(window.location.search);
+
 let montoURL = params.get("monto");
 
 const detalle = document.getElementById("detalle");
+
 const montoInput = document.getElementById("m");
 
 let montoNum = Number(montoURL);
 
 if (!montoURL || isNaN(montoNum) || montoNum === 0) {
-  detalle.innerText = "💚 Gracias por tu aporte libre.";
-  montoInput.placeholder = "Monto libre";
+
+detalle.innerText = "💚 Gracias por tu aporte libre.";
+
+montoInput.placeholder = "Monto libre";
+
 } else {
-  montoInput.value = montoNum;
+
+montoInput.value = montoNum;
+
+detalle.innerText = `🎁 Paquete promocional seleccionado: ${montoNum} Bs`;
+
+}
+
+// GENERAR UID
+function generarUID(){
+
+let uid = localStorage.getItem("uid");
+
+if(!uid){
+
+uid = "U_" + Math.random().toString(36).substring(2,12);
+
+localStorage.setItem("uid",uid);
+
+}
+
+return uid;
+
 }
 
 // GENERAR CÓDIGO CP
 function generarCodigo(monto, nombre, ap1, ap2){
 
-  const iniciales =
-    (nombre[0] || "") +
-    (ap1[0] || "") +
-    (ap2[0] || "");
+const iniciales =
+(nombre[0] || "") +
+(ap1[0] || "") +
+(ap2[0] || "");
 
-  const numero = Math.floor(Math.random() * 900 + 100);
+const numero = Math.floor(Math.random() * 900 + 100);
 
-  return `CP-${monto}-${iniciales.toUpperCase()}${numero}`;
+return `CP-${monto}-${iniciales.toUpperCase()}${numero}`;
+
 }
 
 // BOTÓN PRINCIPAL
 document.getElementById("sendBtn").addEventListener("click", async (e)=>{
+
 e.preventDefault();
 
 let nombre = document.getElementById("n").value;
+
 let ap1 = document.getElementById("ap1").value;
+
 let ap2 = document.getElementById("ap2").value;
+
 let whatsapp = document.getElementById("w").value;
+
 let direccion = document.getElementById("d").value;
+
 let montoFinal = parseInt(document.getElementById("m").value);
 
 if(!montoFinal || montoFinal <= 0){
-  alert("Ingresa un monto válido");
-  return;
+
+alert("Ingresa un monto válido");
+
+return;
+
 }
+
+// UID único
+const uid = generarUID();
 
 // total global
 let snap = await get(totalRef);
+
 let total = snap.val() || 0;
+
 await set(totalRef, total + montoFinal);
 
 // código cofundador
 let codigo = generarCodigo(montoFinal, nombre, ap1, ap2);
 
-// GUARDAR COFUNDADOR EN TIEMPO REAL
-await push(cofRef, {
-  nombre: nombre,
-  apellidos: ap1 + " " + ap2,
-  monto: montoFinal,
-  codigo: codigo,
-  direccion: direccion,
-  fecha: new Date().toISOString()
+/* 🔥 GUARDAR COFUNDADOR CORRECTAMENTE */
+await set(ref(db, "cofundadores/usuarios/" + uid), {
+
+nombre: nombre + " " + ap1 + " " + ap2,
+
+monto: montoFinal,
+
+codigo: codigo,
+
+direccion: direccion,
+
+whatsapp: whatsapp,
+
+fecha: new Date().toISOString()
+
 });
 
 // mensaje WhatsApp
@@ -167,6 +233,7 @@ Dirección: ${direccion}
 
 // OVERLAY
 const overlay = document.createElement("div");
+
 overlay.style.position = "fixed";
 overlay.style.top = "0";
 overlay.style.left = "0";
@@ -220,8 +287,10 @@ document.body.appendChild(overlay);
 
 // REDIRIGIR
 document.getElementById("aceptoBtn").onclick = function(){
-  window.location.href =
-  "https://wa.me/59175166467?text=" + encodeURIComponent(msg);
+
+window.location.href =
+"https://wa.me/59175166467?text=" + encodeURIComponent(msg);
+
 };
 
 });
