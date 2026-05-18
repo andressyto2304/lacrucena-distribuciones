@@ -254,25 +254,26 @@ return new Date(fechaB) - new Date(fechaA);
 
 });
 
-document.getElementById("contadorDonaciones").innerText = keys.length;
-
 keys.forEach((key,index)=>{
 
 const item = data[key];
 
 if(item && typeof item === "object"){
 
-/* 🔥 IGNORAR REGISTROS VACÍOS */
-if(
-!item.nombre ||
-item.nombre === "" ||
-item.monto === undefined
-){
+/* 🔥 SOPORTAR DIFERENTES NOMBRES DE CAMPOS */
+const nombre =
+item.nombre ||
+item.Nombre ||
+item.n ||
+"";
+
+const monto =
+Number(item.monto || item.Monto || item.m || 0);
+
+/* 🔥 IGNORAR SOLO SI NO HAY NOMBRE */
+if(nombre === ""){
 return;
 }
-
-const nombre = item.nombre;
-const monto = Number(item.monto);
 
 contador++;
 
@@ -299,7 +300,6 @@ const div = document.createElement("div");
 
 div.className = "cofundador";
 
-/* 🔥 SOLO NOMBRE */
 div.innerHTML = `💚 <b>${nombre}</b>`;
 
 cont.appendChild(div);
