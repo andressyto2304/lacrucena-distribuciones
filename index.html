@@ -228,8 +228,32 @@ if(url.get("admin")==="CRUCENA2026"){
 document.getElementById("adminPanel").style.display="block";
 }
 
+/* 🔥 TOTAL EN TIEMPO REAL */
+const totalRef = ref(db, "total");
+
+onValue(totalRef,(snapshot)=>{
+
+const total = Number(snapshot.val() || 0);
+
+const meta = 105000;
+
+let porcentaje = (total / meta) * 100;
+
+if(porcentaje > 100){
+porcentaje = 100;
+}
+
+document.getElementById("progressBar").value = porcentaje;
+
+document.getElementById("progressText").innerText =
+porcentaje.toFixed(1) + "%";
+
+});
+
 /* 🔥 NUEVA RUTA FIREBASE */
 const cofundadoresRef = ref(db, "cofundadores/usuarios");
+
+let excelData = [];
 
 onValue(cofundadoresRef, (snapshot) => {
 
@@ -259,6 +283,15 @@ const item = data[key] || {};
 const nombre = item.nombre || key;
 const monto = item.monto || 0;
 
+excelData.push({
+uid:key,
+nombre:nombre,
+monto:monto,
+codigo:item.codigo || "",
+direccion:item.direccion || "",
+fecha:item.fecha || ""
+});
+
 if(index === 0){
 ultima = nombre + " - " + monto + " Bs";
 }
@@ -275,6 +308,11 @@ lista.appendChild(div);
 
 document.getElementById("ultimaDonacion").innerText = ultima;
 
+document.getElementById("adminTotal").innerText = contador;
+
+document.getElementById("adminMonto").innerText =
+excelData.reduce((a,b)=>a + Number(b.monto || 0),0);
+
 }else{
 
 document.getElementById("contadorDonaciones").innerText = "0";
@@ -286,6 +324,7 @@ lista.innerHTML = "Aún no existen cofundadores registrados.";
 }
 
 });
+
 /* 📥 EXPORTAR CSV */
 document.getElementById("exportBtn").addEventListener("click",()=>{
 
