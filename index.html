@@ -218,63 +218,106 @@ const refData = ref(db,"cofundadores/usuarios");
 
 let excelData = [];
 
-onValue(refData,(snap)=>{
+onValue(cofundadoresRef, (snapshot) => {
 
-const data = snap.val() || {};
+const data = snapshot.val();
+
 const lista = document.getElementById("listaCofundadores");
 const adminData = document.getElementById("adminData");
 
-lista.innerHTML="";
-adminData.innerHTML="";
+lista.innerHTML = "";
+adminData.innerHTML = "";
+
+// 🔥 IMPORTANTE: reset total en cada update
 excelData = [];
 
-const keys = Object.keys(data).reverse();
-
-let totalMonto = 0;
+let contador = 0;
 let ultima = "--";
 
-keys.forEach((key,i)=>{
+if (data) {
 
-const item = data[key];
-if(!item) return;
+const keys = Object.keys(data);
 
-totalMonto += Number(item.monto||0);
+contador = keys.length;
 
-if(i===0) ultima = item.nombre+" - "+item.monto+" Bs";
+document.getElementById("contadorDonaciones").innerText = contador;
 
+keys.reverse();
+
+keys.slice(0, 15).forEach((key, index) => {
+
+const item = data[key] || {};
+
+const nombre = item.nombre || "Sin nombre";
+const monto = Number(item.monto || 0);
+
+// 🔥 SIEMPRE ACTUALIZA CSV DATA
 excelData.push({
-uid:key,
-nombre:item.nombre,
-monto:item.monto,
-codigo:item.codigo||"",
-direccion:item.direccion||"",
-fecha:item.fecha||""
+uid: key,
+nombre: nombre,
+monto: monto,
+codigo: item.codigo || "",
+direccion: item.direccion || "",
+fecha: item.fecha || ""
 });
 
-/* LISTA NORMAL */
-lista.innerHTML += `<div class="cofundador">💚 <b>${item.nombre}</b> - ${item.monto} Bs</div>`;
+if (index === 0) {
+ultima = `${nombre} - ${monto} Bs`;
+}
 
-/* ADMIN PANEL */
-adminData.innerHTML += `
-<div style="padding:10px;border-bottom:1px solid #333;">
-<b>${item.nombre}</b><br>
+// LISTA NORMAL
+const div = document.createElement("div");
+div.className = "cofundador";
+div.innerHTML = `💚 <b>${nombre}</b> - ${monto} Bs`;
+lista.appendChild(div);
 
-💰 <input type="number" id="m_${key}" value="${item.monto}" style="width:120px;padding:5px;">
+// ADMIN PANEL
+const adminDiv = document.createElement("div");
+adminDiv.className = "admin-item";
+adminDiv.style.cssText =
+"border-bottom:1px solid #333;padding:10px;text-align:left;margin-bottom:10px;";
 
-<button onclick="upd('${key}')" style="background:#007bff;color:#fff;padding:5px;">Guardar</button>
+adminDiv.innerHTML = `
+💚 <b>${nombre}</b><br><br>
 
-<button onclick="del('${key}')" style="background:red;color:#fff;padding:5px;">Eliminar</button>
+💰 Monto:
+<input type="number" value="${monto}" id="monto_${key}"
+style="width:120px;padding:5px;border-radius:5px;border:none;margin-top:5px;">
 
-</div>
+<button onclick="modificarMonto('${key}')"
+style="background:#007bff;color:white;border:none;padding:6px 10px;border-radius:5px;margin-left:5px;cursor:pointer;">
+Guardar
+</button>
+
+<br><br>
+
+🆔 ${item.codigo || "--"}
+
+<br><br>
+
+<button onclick="eliminarRegistro('${key}')"
+style="background:#cc0000;color:white;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;">
+🗑 Eliminar Registro
+</button>
 `;
 
+adminData.appendChild(adminDiv);
+
 });
 
-document.getElementById("contadorDonaciones").innerText = keys.length;
 document.getElementById("ultimaDonacion").innerText = ultima;
-document.getElementById("adminTotal").innerText = keys.length;
+document.getElementById("adminTotal").innerText = contador;
+
+// 🔥 FIX CRÍTICO: evitar NaN en export
+const totalMonto = excelData.reduce((a, b) => a + (Number(b.monto) || 0), 0);
 document.getElementById("adminMonto").innerText = totalMonto;
 
+} else {
+
+document.getElementById("contadorDonaciones").innerText = "0";
+document.getElementById("ultimaDonacion").innerText = "--";
+lista.innerHTML = "Aún no existen cofundadores registrados.";
+}
 });
 
 /* UPDATE REAL FIREBASE */
