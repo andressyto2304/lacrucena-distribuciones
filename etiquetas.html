@@ -41,7 +41,6 @@ font-weight:bold;
 cursor:pointer;
 }
 
-/* 🔥 IMAGEN PERFECTA SIN DEFORMAR */
 img{
 width:100%;
 max-height:260px;
@@ -49,21 +48,6 @@ object-fit:contain;
 background:#000;
 border-radius:10px;
 margin-top:10px;
-}
-
-/* barra opcional */
-.progressBar{
-height:8px;
-background:#222;
-border-radius:5px;
-overflow:hidden;
-margin-top:5px;
-}
-
-.progress{
-height:100%;
-background:#00cc44;
-width:0%;
 }
 
 #nextBtn{
@@ -130,17 +114,18 @@ getDatabase,
 ref,
 get,
 set,
+update,
 onValue
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAzKqIZC8Jg4zC8C8C8",
-  authDomain: "lacrucena-db.firebaseapp.com",
-  databaseURL: "https://lacrucena-db-default-rtdb.firebaseio.com",
-  projectId: "lacrucena-db",
-  storageBucket: "lacrucena-db.firebasestorage.app",
-  messagingSenderId: "808407017494",
-  appId: "1:808407017494:web:3202e7a9ee67e8d625ed37"
+apiKey: "TU_API_KEY",
+authDomain: "lacrucena-db.firebaseapp.com",
+databaseURL: "https://lacrucena-db-default-rtdb.firebaseio.com",
+projectId: "lacrucena-db",
+storageBucket: "lacrucena-db.firebasestorage.app",
+messagingSenderId: "808407017494",
+appId: "1:808407017494:web:3202e7a9ee67e8d625ed37"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -167,10 +152,8 @@ return id;
 
 const uid = getUserId();
 
-let gaseosaVoted = false;
-let jugoVoted = false;
-
 /* 🔥 MOSTRAR VOTOS EN TIEMPO REAL */
+
 onValue(votosRef,(snapshot)=>{
 
 const votos = snapshot.val() || {};
@@ -185,77 +168,17 @@ document.getElementById("j3v").innerText = votos.j3 || 0;
 
 });
 
-// 🔥 VOTAR CON BLOQUEO REAL
-window.vote = async function(cat,opt){
+/* 🔥 VALIDAR SI YA TERMINÓ */
 
-const userRef = ref(db,userRefBase+uid);
+async function checkFinish(){
 
-const snap = await get(userRef);
+const snap = await get(ref(db,userRefBase+uid));
 
-const data = snap.val()||{};
+const data = snap.val() || {};
 
-// bloqueo real
-if(cat==="gaseosa" && data.gaseosaVotado){
+if(data.gaseosaVotado && data.jugoVotado){
 
-alert("Ya votaste gaseosas");
-
-return;
-
-}
-
-if(cat==="jugo" && data.jugoVotado){
-
-alert("Ya votaste jugos");
-
-return;
-
-}
-
-// guardar usuario
-if(cat==="gaseosa"){
-
-await set(userRef,{...data,gaseosaVotado:true,gaseosa:opt});
-
-gaseosaVoted = true;
-
-}
-
-if(cat==="jugo"){
-
-await set(userRef,{...data,jugoVotado:true,jugo:opt});
-
-jugoVoted = true;
-
-}
-
-// sumar votos
-const snapVotes = await get(votosRef);
-
-let votos = snapVotes.val()||{};
-
-votos[opt]=(votos[opt]||0)+1;
-
-await set(votosRef,votos);
-
-/* 🔥 MENSAJE */
-alert("💚 Gracias por votar por tu etiqueta favorita");
-
-// validar avance real
-checkFinish();
-
-};
-
-function checkFinish(){
-
-const userRef = ref(db,userRefBase+uid);
-
-get(userRef).then(snap=>{
-
-const d = snap.val()||{};
-
-if(d.gaseosaVotado && d.jugoVotado){
-
-document.getElementById("nextBtn").style.display="block";
+document.getElementById("nextBtn").style.display = "block";
 
 setTimeout(()=>{
 
@@ -265,11 +188,84 @@ window.location.href="paquetes.html";
 
 }
 
+}
+
+/* 🔥 VOTAR */
+
+window.vote = async function(categoria, opcion){
+
+const userRef = ref(db,userRefBase+uid);
+
+const snap = await get(userRef);
+
+const data = snap.val() || {};
+
+/* 🔒 BLOQUEOS */
+
+if(categoria==="gaseosa" && data.gaseosaVotado){
+
+alert("⚠️ Ya votaste en gaseosas");
+
+return;
+
+}
+
+if(categoria==="jugo" && data.jugoVotado){
+
+alert("⚠️ Ya votaste en jugos");
+
+return;
+
+}
+
+/* 🔥 ACTUALIZAR DATOS USUARIO */
+
+if(categoria==="gaseosa"){
+
+await update(userRef,{
+gaseosaVotado:true,
+gaseosa:opcion
 });
 
 }
 
-// fallback
+if(categoria==="jugo"){
+
+await update(userRef,{
+jugoVotado:true,
+jugo:opcion
+});
+
+}
+
+/* 🔥 SUMAR VOTOS */
+
+const votosSnap = await get(votosRef);
+
+const votos = votosSnap.val() || {};
+
+const actual = Number(votos[opcion] || 0);
+
+await update(votosRef,{
+[opcion]: actual + 1
+});
+
+/* 🔥 MENSAJE */
+
+alert("💚 Gracias por votar por tu etiqueta favorita");
+
+/* 🔥 VALIDAR FINAL */
+
+checkFinish();
+
+};
+
+/* 🔥 VALIDAR AL ENTRAR */
+
+checkFinish();
+
+/* 🔥 BOTÓN MANUAL */
+
 window.goNext = function(){
 
 window.location.href="paquetes.html";
@@ -278,11 +274,12 @@ window.location.href="paquetes.html";
 
 </script>
 
-<!-- BOTÓN DE NAVEGACIÓN A PAQUETES -->
 <button onclick="window.location.href='paquetes.html'"
-style="background:#007bff; width:100%; margin-top:20px; padding:10px; border:none; border-radius:8px; color:white; font-weight:bold; cursor:pointer;">
+style="background:#007bff;width:100%;margin-top:20px;padding:10px;border:none;border-radius:8px;color:white;font-weight:bold;cursor:pointer;">
+
 ➡ Siguiente: Paquetes Promocionales
+
 </button>
-  
+
 </body>
 </html>
